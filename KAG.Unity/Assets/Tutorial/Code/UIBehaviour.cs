@@ -7,6 +7,8 @@ public class UIBehaviour : MonoBehaviour
 {
 	public static UIBehaviour Instance { get; private set; }
 
+	public string Username => _inputField.text;
+	
 	[SerializeField]
 	private TMP_InputField _inputField;
 
@@ -39,6 +41,8 @@ public class UIBehaviour : MonoBehaviour
 	private void Start()
 	{
 		_testLocallyButton.onClick.AddListener(NetworkInterfaceBehaviour.Instance.StartLocalSession);
+		_readyButton.onClick.AddListener(NetworkInterfaceBehaviour.Instance.SetPlayerReady);
+		
 		SetLobbyInteractivity(false);
 	}
     
@@ -62,7 +66,7 @@ public class UIBehaviour : MonoBehaviour
 
 		foreach (var networkBehaviour in networkBehaviours)
 		{
-			var connectedPlayer = Instantiate(_connectedPlayerPrefab, _connectedPlayerPrefab.transform);
+			var connectedPlayer = Instantiate(_connectedPlayerPrefab, _connectedPlayersGroup.transform);
             
 			var label = connectedPlayer.GetComponentInChildren<TMP_Text>();
 			label.text = networkBehaviour.Info.PlayerName;

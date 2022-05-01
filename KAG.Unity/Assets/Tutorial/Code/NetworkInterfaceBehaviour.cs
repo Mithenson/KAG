@@ -1,6 +1,7 @@
 ﻿using System;
 using DarkRift;
 using DarkRift.Client.Unity;
+using TutorialPlugin;
 using UnityEngine;
 
 public class NetworkInterfaceBehaviour : MonoBehaviour
@@ -32,8 +33,21 @@ public class NetworkInterfaceBehaviour : MonoBehaviour
 	private void OnLocalSessionConnectionCompleted(Exception _)
 	{
 		if (_client.ConnectionState == ConnectionState.Connected)
+		{
+			NetworkManagementBehaviour.Instance.UpdatePlayerData();
 			UIBehaviour.Instance.SetLobbyInteractivity(true);
+		}
 		else
 			UIBehaviour.Instance.SetInputInteractivity(true);
+	}
+
+	public void SetPlayerReady()
+	{
+		using (var writer = DarkRiftWriter.Create())
+		{
+			writer.Write(new PlayerReady(_client.ID, true));
+			using (var message = Message.Create(Tags.PlayerReady, writer))
+				_client.SendMessage(message, SendMode.Reliable);
+		}
 	}
 }
