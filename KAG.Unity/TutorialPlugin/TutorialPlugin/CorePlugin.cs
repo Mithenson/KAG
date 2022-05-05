@@ -13,11 +13,16 @@ namespace TutorialPlugin
 		public override bool ThreadSafe => false;
 
 		private Dictionary<IClient, (Player Value, PlayerState State)> _connectedPlayers;
+		private DateTime _startDateTime;
+		private bool _sessionIdAssigned;
 
 		public CorePlugin(PluginLoadData loadData) : base(loadData)
 		{
-			_connectedPlayers = new Dictionary<IClient, (Player Value, PlayerState State)>();
+			_sessionIdAssigned = false;
+			GameserverSDK.RegisterHealthCallback(OnHealthCheck);
+			GameserverSDK.RegisterShutdownCallback(OnShutDown);
 			
+			_connectedPlayers = new Dictionary<IClient, (Player Value, PlayerState State)>();
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
 			
@@ -31,7 +36,40 @@ namespace TutorialPlugin
 				
 			}
 		}
-		
+
+		private bool OnHealthCheck()
+		{
+			if (!_sessionIdAssigned)
+			{
+				var config = GameserverSDK.getConfigSettings();
+				if (config.TryGetValue(GameserverSDK.ServerIdKey, out var sessionId))
+				{
+					_startDateTime = DateTime.Now;
+					_sessionIdAssigned = true;
+				}
+
+				return true;
+			}
+			
+			var awakeTime = (float)(DateTime.Now - _startDateTime).TotalSeconds;
+			if (awakeTime > 600.0f && _connectedPlayers.Count <= 0)
+			{
+				OnShutDown();
+				return false;
+			}
+
+			return true;
+		}
+
+		private void UpdatePlayfabPlayers()
+		{
+			var players = new List<ConnectedPlayer>();
+			foreach (var connectedPlayer in _connectedPlayers.Values)
+				players.Add(new ConnectedPlayer(connectedPlayer.Value.PlayerName));
+			
+			GameserverSDK.UpdateConnectedPlayers(players);
+		}
+
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
 		{
 			var player = new Player(args.Client.ID, "John Doe");
@@ -61,6 +99,7 @@ namespace TutorialPlugin
 			}
 			
 			args.Client.MessageReceived += OnClientMessageReceived;
+			UpdatePlayfabPlayers();
 		}
 
 		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
@@ -154,6 +193,11 @@ namespace TutorialPlugin
 						client.SendMessage(message, SendMode.Reliable);
 				}
 			}
+			
+			UpdatePlayfabPlayers();
 		}
+
+		private void OnShutDown() => 
+			Environment.Exit(1);
 	}
 }

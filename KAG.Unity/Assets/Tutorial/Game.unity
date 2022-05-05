@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   host: 127.0.0.1
-  port: 4296
+  port: 56100
   noDelay: 0
   connectOnStart: 0
   eventsFromDispatcher: 1
@@ -205,6 +205,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb9ccf132b34f7ba5d284f6a91ead73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _region: NorthEurope
+  _matchmakingQueue: DefaultQueue
+  _matchmakingTimeout: 100
+  _playfabTCPPortName: KAG_tcp
+  _playfabUDPPortName: KAG_udp
 --- !u!114 &9030639
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -40,6 +40,7 @@ public class UIBehaviour : MonoBehaviour
 
 	private void Start()
 	{
+		_startSessionButton.onClick.AddListener(() => NetworkInterfaceBehaviour.Instance.StartSession(_inputField.text));
 		_testLocallyButton.onClick.AddListener(NetworkInterfaceBehaviour.Instance.StartLocalSession);
 		_readyButton.onClick.AddListener(NetworkInterfaceBehaviour.Instance.SetPlayerReady);
 		
