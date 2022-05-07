@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 9030637}
   - component: {fileID: 9030638}
   - component: {fileID: 9030639}
+  - component: {fileID: 9030640}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -225,6 +226,18 @@ MonoBehaviour:
   _localPlayerPrefab: {fileID: 3809511127051867389, guid: 25a59865ce46e374092cb287e9bf7b79, type: 3}
   _remotePlayerPlayer: {fileID: 3809511127051867389, guid: bcda13fd1ace7794da6cff1b53760f36, type: 3}
   _spawnArea: {fileID: 2017119849}
+--- !u!114 &9030640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9030635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42cc2d6b7c114a08ad057be5eb66f1bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &90938972
 GameObject:
   m_ObjectHideFlags: 0

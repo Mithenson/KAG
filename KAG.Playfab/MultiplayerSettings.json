@@ -2,7 +2,7 @@
   "RunContainer": true,
   "OutputFolder": "",
   "NumHeartBeatsForActivateResponse": 10,
-  "NumHeartBeatsForTerminateResponse": 60,
+  "NumHeartBeatsForTerminateResponse": 1000,
   "AgentListeningPort": 56001,
   "AssetDetails": [
     {
@@ -10,11 +10,6 @@
       "LocalFilePath": "D:\\Work\\Git\\KAG\\KAG.DarkRift\\DarkRift.Server.Console.zip"
     }
   ],
-  "DeploymentMetadata": {
-    "Environment": "LOCAL",
-    "FeaturesEnabled": "List,Of,Features,Enabled"
-  },
-  "GameCertificateDetails": [],
   "PortMappingsList": [
     [
       {
@@ -52,12 +47,10 @@
       "Password": ""
     }
   },
-  "SessionConfig": {
+    "SessionConfig": {
     "SessionId": "ba67d671-512a-4e7d-a38c-2329ce181946",
     "SessionCookie": null,
-    "InitialPlayers": [ "Player1", "Player2" ]
+    "InitialPlayers": []
   },
-  "TitleId": "",
-  "BuildId": "00000000-0000-0000-0000-000000000000",
-  "Region": "WestUs"
+  "Region": "NorthEurope"
 }

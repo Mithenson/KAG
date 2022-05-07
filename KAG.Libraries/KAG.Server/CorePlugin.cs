@@ -28,14 +28,7 @@ namespace KAG.Server
 			ClientManager.ClientDisconnected += OnClientDisconnected;
 			
 			GameserverSDK.Start();
-			if (GameserverSDK.ReadyForPlayers())
-			{
-				
-			}
-			else
-			{
-				
-			}
+			GameserverSDK.ReadyForPlayers();
 		}
 
 		private bool OnHealthCheck()
@@ -43,7 +36,7 @@ namespace KAG.Server
 			if (!_sessionIdAssigned)
 			{
 				var config = GameserverSDK.getConfigSettings();
-				if (config.TryGetValue(GameserverSDK.ServerIdKey, out var sessionId))
+				if (config.TryGetValue(GameserverSDK.ServerIdKey, out _))
 				{
 					_startDateTime = DateTime.Now;
 					_sessionIdAssigned = true;
