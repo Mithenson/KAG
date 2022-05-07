@@ -1,0 +1,22 @@
+{
+    "name": "KAG.Unity.Network",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0da6d172d18a54e4389d0dce1e1ffdf2",
+        "GUID:e540c3f453cfe71428b2ae5c8a89be18",
+        "GUID:3ae28362d6d812b4dae965375f355cbc"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "KAG.Shared.dll",
+        "DarkRift.dll",
+        "DarkRift.Client.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
