@@ -31,7 +31,7 @@ namespace KAG.Server
 			{
 				GameserverSDK.RegisterHealthCallback(OnHealthCheck);
 				GameserverSDK.RegisterShutdownCallback(OnShutDown);
-			
+
 				GameserverSDK.Start();
 				GameserverSDK.ReadyForPlayers();
 

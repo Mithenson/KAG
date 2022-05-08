@@ -5,6 +5,7 @@ using DarkRift;
 using DarkRift.Client.Unity;
 using KAG.Shared;
 using PlayFab;
+using PlayFab.AuthenticationModels;
 using PlayFab.ClientModels;
 using PlayFab.MultiplayerModels;
 using UnityEngine;
@@ -66,6 +67,15 @@ public class NetworkInterfaceBehaviour : MonoBehaviour
 			CreateAccount = true
 		};
 		
+		var a = new GetEntityTokenRequest()
+		{
+			AuthenticationContext = new PlayFabAuthenticationContext()
+			{
+				
+			} 
+		}
+			
+			PlayFabAuthenticationAPI.GetEntityToken();
 		PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnPlayfabError);
 		UIBehaviour.Instance.SetInputInteractivity(false);
 	}

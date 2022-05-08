@@ -15,7 +15,7 @@
       {
         "NodePort": 56100,
         "GamePort": {
-          "Name": "game_port_tcp",
+          "Name": "KAG_tcp",
           "Number": 4296,
           "Protocol": "TCP"
         }
@@ -23,7 +23,7 @@
 	  {
         "NodePort": 56100,
         "GamePort": {
-          "Name": "game_port_udp",
+          "Name": "KAG_udp",
           "Number": 4296,
           "Protocol": "UDP"
         }
