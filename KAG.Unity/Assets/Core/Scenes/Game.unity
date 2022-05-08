@@ -132,10 +132,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9030636}
+  - component: {fileID: 9030640}
   - component: {fileID: 9030637}
   - component: {fileID: 9030638}
   - component: {fileID: 9030639}
-  - component: {fileID: 9030640}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -238,6 +238,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42cc2d6b7c114a08ad057be5eb66f1bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _runInContainer: 0
+  _containerPort: 56100
+  _directPort: 4296
+  _showWindow: 1
 --- !u!1 &90938972
 GameObject:
   m_ObjectHideFlags: 0

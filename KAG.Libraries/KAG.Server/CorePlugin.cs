@@ -17,18 +17,31 @@ namespace KAG.Server
 		private DateTime _startDateTime;
 		private bool _sessionIdAssigned;
 
+		private bool _hookedToPlayfab;
+
 		public CorePlugin(PluginLoadData loadData) : base(loadData)
 		{
 			_sessionIdAssigned = false;
-			GameserverSDK.RegisterHealthCallback(OnHealthCheck);
-			GameserverSDK.RegisterShutdownCallback(OnShutDown);
 			
 			_connectedPlayers = new Dictionary<IClient, (Player Value, PlayerState State)>();
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
+
+			try
+			{
+				GameserverSDK.RegisterHealthCallback(OnHealthCheck);
+				GameserverSDK.RegisterShutdownCallback(OnShutDown);
 			
-			GameserverSDK.Start();
-			GameserverSDK.ReadyForPlayers();
+				GameserverSDK.Start();
+				GameserverSDK.ReadyForPlayers();
+
+				_hookedToPlayfab = true;
+			}
+			catch (Exception exception)
+			{
+				Logger.Log("Could not hook up to playfab.", LogType.Warning, exception);
+				_hookedToPlayfab = false;
+			}
 		}
 
 		private bool OnHealthCheck()
@@ -61,7 +74,8 @@ namespace KAG.Server
 			foreach (var connectedPlayer in _connectedPlayers.Values)
 				players.Add(new ConnectedPlayer(connectedPlayer.Value.PlayerName));
 			
-			GameserverSDK.UpdateConnectedPlayers(players);
+			if (_hookedToPlayfab)
+				GameserverSDK.UpdateConnectedPlayers(players);
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
