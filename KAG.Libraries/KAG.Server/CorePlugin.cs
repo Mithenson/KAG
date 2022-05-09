@@ -5,15 +5,29 @@ using DarkRift;
 using DarkRift.Server;
 using KAG.Shared;
 using Microsoft.Playfab.Gaming.GSDK.CSharp;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace KAG.Server
 {
-	public class CorePlugin : Plugin
+	public sealed class CorePlugin : Plugin
 	{
+		private const int MaxPlayers = 12;
+		
 		public override Version Version => new Version(1, 0, 0);
 		public override bool ThreadSafe => false;
 
-		private Dictionary<IClient, (Player Value, PlayerState State)> _connectedPlayers;
+		private HashSet<IClient> _clientsOnStandby;
+		
+		public CorePlugin(PluginLoadData pluginLoadData) : base(pluginLoadData)
+		{
+			_clientsOnStandby = new HashSet<IClient>();
+			
+		}
+		
+		
+		
+		/*private Dictionary<IClient, (Player Value, PlayerState State)> _connectedPlayers;
 		private DateTime _startDateTime;
 		private bool _sessionIdAssigned;
 
@@ -206,6 +220,6 @@ namespace KAG.Server
 		}
 
 		private void OnShutDown() => 
-			Environment.Exit(1);
+			Environment.Exit(1);*/
 	}
 }

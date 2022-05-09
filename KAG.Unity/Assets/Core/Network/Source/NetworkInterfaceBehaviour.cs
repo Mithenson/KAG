@@ -66,16 +66,7 @@ public class NetworkInterfaceBehaviour : MonoBehaviour
 			CustomId = clientName,
 			CreateAccount = true
 		};
-		
-		var a = new GetEntityTokenRequest()
-		{
-			AuthenticationContext = new PlayFabAuthenticationContext()
-			{
-				
-			} 
-		}
-			
-			PlayFabAuthenticationAPI.GetEntityToken();
+
 		PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnPlayfabError);
 		UIBehaviour.Instance.SetInputInteractivity(false);
 	}
