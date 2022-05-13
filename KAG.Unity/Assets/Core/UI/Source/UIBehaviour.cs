@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class UIBehaviour : MonoBehaviour
 {
-	public static UIBehaviour Instance { get; private set; }
+	/*public static UIBehaviour Instance { get; private set; }
 
 	public string Username => _inputField.text;
 	
@@ -81,5 +81,5 @@ public class UIBehaviour : MonoBehaviour
 		_startSessionButton.GetComponentInChildren<TMP_Text>().text = message;
 
 	public void Close() => 
-		this.gameObject.SetActive(false);
+		this.gameObject.SetActive(false);*/
 }

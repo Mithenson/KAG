@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 
 public class NetworkManagementBehaviour : MonoBehaviour
 {
-	public static NetworkManagementBehaviour Instance { get; private set; }
+	/*public static NetworkManagementBehaviour Instance { get; private set; }
 
 	[SerializeField]
 	private NetworkBehaviour _localPlayerPrefab;
@@ -185,5 +185,5 @@ public class NetworkManagementBehaviour : MonoBehaviour
 		}
 		
 		UIBehaviour.Instance.PopulateConnectedPlayers(_connectedNetworkBehaviours.Values.Select(behaviour => behaviour.Info));
-	}
+	}*/
 }

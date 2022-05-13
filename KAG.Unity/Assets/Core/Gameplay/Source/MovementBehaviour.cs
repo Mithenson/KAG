@@ -2,7 +2,7 @@
 
 public class MovementBehaviour : MonoBehaviour
 {
-	[SerializeField]
+	/*[SerializeField]
 	private CharacterController _controller;
     
 	[SerializeField]
@@ -26,5 +26,5 @@ public class MovementBehaviour : MonoBehaviour
 		_controller.Move(delta);
 		
 		NetworkManagementBehaviour.Instance.UpdatePlayerPosition(this.transform.position);
-	}
+	}*/
 }

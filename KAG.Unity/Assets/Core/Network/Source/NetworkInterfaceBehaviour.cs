@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using DarkRift;
 using DarkRift.Client.Unity;
 using KAG.Shared;
@@ -14,7 +16,53 @@ using EntityKey = PlayFab.ClientModels.EntityKey;
 
 public class NetworkInterfaceBehaviour : MonoBehaviour
 {
-	public static NetworkInterfaceBehaviour Instance { get; private set; }
+	public interface INetworkSocket
+	{
+		Task Connect(UnityClient client, CancellationToken cancellationToken);
+	}
+
+	[Serializable]
+	public class ConnectionParameters
+	{
+		#region Nested types
+
+		private enum Mode
+		{
+			IPAddress,
+			Host
+		}
+
+		#endregion
+
+		[SerializeField]
+		private string _host;
+		
+		
+	}
+
+	public sealed class LocalNetworkSocket : INetworkSocket
+	{
+		private const int _checkInterval = 1000;
+
+		private bool _isDone;
+		
+		public async Task Connect(UnityClient client, CancellationToken cancellationToken)
+		{
+			_isDone = false;
+			
+			//client.ConnectInBackground();
+
+			while (!_isDone)
+			{
+				await Task.Delay(_checkInterval, cancellationToken);
+
+				if (cancellationToken.IsCancellationRequested)
+					return;
+			}
+		}
+	}
+
+	/*public static NetworkInterfaceBehaviour Instance { get; private set; }
 
 	[SerializeField]
 	private string _region;
@@ -210,5 +258,5 @@ public class NetworkInterfaceBehaviour : MonoBehaviour
 	}
 	
 	private void OnPlayfabError(PlayFabError playFabError) =>
-		Debug.LogError($"Encountered a network error:\n{playFabError.GenerateErrorReport()}");
+		Debug.LogError($"Encountered a network error:\n{playFabError.GenerateErrorReport()}");*/
 }
