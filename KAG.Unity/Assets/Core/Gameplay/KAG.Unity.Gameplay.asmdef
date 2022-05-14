@@ -1,6 +1,6 @@
 {
     "name": "KAG.Unity.Gameplay",
-    "rootNamespace": "",
+    "rootNamespace": "KAG.Unity",
     "references": [
         "GUID:16193552ed161e74c85619c17396da5c"
     ],

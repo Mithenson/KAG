@@ -132,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9030636}
-  - component: {fileID: 9030640}
   - component: {fileID: 9030637}
   - component: {fileID: 9030638}
   - component: {fileID: 9030639}
@@ -155,7 +154,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9030637
 MonoBehaviour:
@@ -206,11 +205,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb9ccf132b34f7ba5d284f6a91ead73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _region: NorthEurope
-  _matchmakingQueue: DefaultQueue
-  _matchmakingTimeout: 100
-  _playfabTCPPortName: KAG_tcp
-  _playfabUDPPortName: KAG_udp
 --- !u!114 &9030639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,25 +217,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a42be7eb41074d23bec5a160618413b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _localPlayerPrefab: {fileID: 3809511127051867389, guid: 25a59865ce46e374092cb287e9bf7b79, type: 3}
-  _remotePlayerPlayer: {fileID: 3809511127051867389, guid: bcda13fd1ace7794da6cff1b53760f36, type: 3}
-  _spawnArea: {fileID: 2017119849}
---- !u!114 &9030640
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9030635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42cc2d6b7c114a08ad057be5eb66f1bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _runInContainer: 0
-  _containerPort: 56100
-  _directPort: 4296
-  _showWindow: 1
 --- !u!1 &90938972
 GameObject:
   m_ObjectHideFlags: 0
@@ -1121,6 +1096,105 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 745100790}
   m_CullTransparentMesh: 1
+--- !u!1 &845764579
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 845764582}
+  - component: {fileID: 845764581}
+  - component: {fileID: 845764580}
+  m_Layer: 0
+  m_Name: Context
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &845764580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845764579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f9e5e8cc1b082a4caa7a07d8919ed32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _mode: 2
+  _localServerNetworkProvider:
+    _socket:
+      _mode: 1
+      _endPoint: 127.0.0.1
+      _tcpPort: 4296
+      _udpPort: 4296
+  _localServerProcess:
+    _showWindow: 0
+  _localServerViaDockerNetworkProvider:
+    _socket:
+      _mode: 1
+      _endPoint: 127.0.0.1
+      _tcpPort: 56100
+      _udpPort: 56100
+  _localServerViaDockerProcess:
+    _showWindow: 0
+  _playfabNetworkProvider:
+    _region: 0
+    _matchmakingQueueName: DefaultQueue
+    _matchmakingTimeoutInSeconds: 100
+    _tcpPortName: KAG_tcp
+    _udpPortName: KAG_udp
+--- !u!114 &845764581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845764579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89715ad69b973a14899afa2c6730b30b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _scriptableObjectInstallers: []
+  _monoInstallers:
+  - {fileID: 845764580}
+  _installerPrefabs: []
+  _autoRun: 1
+  OnPreInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostInstall:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPreResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPostResolve:
+    m_PersistentCalls:
+      m_Calls: []
+  _parentNewObjectsUnderSceneContext: 0
+  _contractNames: []
+  _parentContractNames: []
+--- !u!4 &845764582
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845764579}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &893326584
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,7 +1276,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &915545492
 GameObject:
@@ -1645,7 +1719,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &1220450853
 GameObject:
@@ -2374,7 +2448,7 @@ RectTransform:
   - {fileID: 1982955111}
   - {fileID: 1297604298}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2393,12 +2467,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e464ed3fbd824b19ab2975fc9fcde3a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inputField: {fileID: 93659219}
-  _startSessionButton: {fileID: 1193551328}
-  _testLocallyButton: {fileID: 2050772490}
-  _connectedPlayersGroup: {fileID: 1781508700}
-  _connectedPlayerPrefab: {fileID: 2899924106431955912, guid: b5b9228700eb16f47a715d22766aae88, type: 3}
-  _readyButton: {fileID: 2042534784}
 --- !u!1 &1612641365
 GameObject:
   m_ObjectHideFlags: 0
@@ -2528,7 +2596,7 @@ Transform:
   - {fileID: 1354756748}
   - {fileID: 2017119848}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1696066057
 GameObject:

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DarkRift;
 
 namespace KAG.Shared
@@ -23,10 +24,30 @@ namespace KAG.Shared
 		public Entity CreateEntity()
 		{
 			var id = GetNextEntityId();
+			return IMP_CreateEntity(id);
+		}
+		public Entity CreateEntity(ushort id)
+		{
+			if (_entities.ContainsKey(id))
+				throw new InvalidOperationException($"An entity with `{nameof(id)}={id}` already exists.");
+
+			return IMP_CreateEntity(id);
+		}
+		private Entity IMP_CreateEntity(ushort id)
+		{
 			var entity =  _entityPool.Acquire(id);
 			
 			_entities.Add(id, entity);
 			return entity;
+		}
+		
+		private ushort GetNextEntityId()
+		{
+			var id = (ushort)_entities.Count;
+			if (_idsAvailableForRecycling.Count > 0)
+				id = _idsAvailableForRecycling.Dequeue();
+
+			return id;
 		}
 
 		public Entity CloneEntity(Entity entity)
@@ -42,16 +63,7 @@ namespace KAG.Shared
 
 			return clone;
 		}
-
-		private ushort GetNextEntityId()
-		{
-			var id = (ushort)_entities.Count;
-			if (_idsAvailableForRecycling.Count > 0)
-				id = _idsAvailableForRecycling.Dequeue();
-
-			return id;
-		}
-
+		
 		public void Destroy(Entity entity)
 		{
 			_entities.Remove(entity.Id);

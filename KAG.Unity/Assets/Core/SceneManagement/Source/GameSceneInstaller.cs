@@ -1,18 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
+using KAG.Unity.Network;
+using Sirenix.OdinInspector;
 using UnityEngine;
+using Zenject;
 
-public class GameSceneInstaller : MonoBehaviour
+namespace KAG.Unity.SceneManagement
 {
-    // Start is called before the first frame update
-    void Start()
+    public class GameSceneInstaller : MonoInstaller
     {
-        
-    }
+        #region Nested types
 
-    // Update is called once per frame
-    void Update()
-    {
+        private enum Mode
+        {
+            LocalServer,
+            LocalServerViaDocker,
+            PlayFab
+        }
+
+        #endregion
+
+        [SerializeField]
+        private Mode _mode;
+
+        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        private LocalNetworkSocketProvider _localServerNetworkProvider;
+
+        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        private LocalConsoleServerProcess _localServerProcess;
         
+        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        private LocalNetworkSocketProvider _localServerViaDockerNetworkProvider;
+        
+        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        private LocalConsoleServerViaDockerProcess _localServerViaDockerProcess;
+        
+        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.PlayFab)]
+        private PlayFabNetworkSocketProvider _playfabNetworkProvider;
+        
+        public override void InstallBindings()
+        {
+            
+        }
     }
 }

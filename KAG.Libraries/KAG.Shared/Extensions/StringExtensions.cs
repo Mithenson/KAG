@@ -18,5 +18,19 @@ namespace KAG.Shared.Extensions
 			genericity += ">";
 			return genericity;
 		}
+
+		public static string FormatCamelCase(this string value)
+		{
+			for (var i = 1; i < value.Length; i++)
+			{
+				var character = value[i];
+				if (!char.IsUpper(character))
+					continue;
+
+				value = value.Remove(i, 1).Insert(i, $" {char.ToLower(character)}");
+			}
+
+			return value;
+		}
 	}
 }

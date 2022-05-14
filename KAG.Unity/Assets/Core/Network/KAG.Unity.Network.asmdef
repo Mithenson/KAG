@@ -1,10 +1,11 @@
 {
     "name": "KAG.Unity.Network",
-    "rootNamespace": "",
+    "rootNamespace": "KAG.Unity",
     "references": [
         "GUID:0da6d172d18a54e4389d0dce1e1ffdf2",
         "GUID:e540c3f453cfe71428b2ae5c8a89be18",
-        "GUID:3ae28362d6d812b4dae965375f355cbc"
+        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4",
+        "GUID:d8a892de3fe47af4fb93e2e1ce3fd4cd"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -13,7 +14,9 @@
     "precompiledReferences": [
         "KAG.Shared.dll",
         "DarkRift.dll",
-        "DarkRift.Client.dll"
+        "DarkRift.Client.dll",
+        "Sirenix.OdinInspector.Attributes.dll",
+        "Zenject-usage.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

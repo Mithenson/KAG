@@ -1,14 +1,21 @@
 {
     "name": "KAG.Unity.SceneManagement",
-    "rootNamespace": "",
+    "rootNamespace": "KAG.Unity",
     "references": [
-        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4"
+        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4",
+        "GUID:d8a892de3fe47af4fb93e2e1ce3fd4cd",
+        "GUID:ab3b9978d385e5141a6151d7252ec7ec",
+        "GUID:16193552ed161e74c85619c17396da5c",
+        "GUID:3ae28362d6d812b4dae965375f355cbc"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Zenject-usage.dll",
+        "Sirenix.OdinInspector.Attributes.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
