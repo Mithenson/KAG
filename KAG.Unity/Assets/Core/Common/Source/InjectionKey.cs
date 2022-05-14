@@ -1,4 +1,7 @@
-public enum InjectionKey
+namespace KAG.Unity.Common
 {
-	LocalServerProcess
+	public enum InjectionKey
+	{
+		LocalServerProcess
+	}
 }

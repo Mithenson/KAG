@@ -1,5 +1,6 @@
 ﻿using System;
 using KAG.Shared.Utilities;
+using KAG.Unity.Common;
 
 namespace KAG.Unity.Network
 {
