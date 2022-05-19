@@ -22,19 +22,19 @@ namespace KAG.Unity.SceneManagement
         private Mode _mode;
 
         [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServer)]
-        private LocalNetworkSocketProvider _localServerNetworkProvider;
+        private LocalMatchProvider _localServerNetworkProvider;
 
         [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServer)]
         private LocalConsoleServerProcess _localServerProcess;
         
         [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
-        private LocalNetworkSocketProvider _localServerViaDockerNetworkProvider;
+        private LocalMatchProvider _localServerViaDockerNetworkProvider;
         
         [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
         private LocalConsoleServerViaDockerProcess _localServerViaDockerProcess;
         
         [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.PlayFab)]
-        private PlayFabNetworkSocketProvider _playfabNetworkProvider;
+        private PlayFabMatchProvider _playfabNetworkProvider;
         
         public override void InstallBindings()
         {

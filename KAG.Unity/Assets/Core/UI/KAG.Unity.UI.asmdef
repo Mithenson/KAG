@@ -3,7 +3,8 @@
     "rootNamespace": "KAG.Unity",
     "references": [
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:16193552ed161e74c85619c17396da5c"
+        "GUID:16193552ed161e74c85619c17396da5c",
+        "GUID:d8a892de3fe47af4fb93e2e1ce3fd4cd"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

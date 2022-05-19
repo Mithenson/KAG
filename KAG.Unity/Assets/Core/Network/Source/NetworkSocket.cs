@@ -7,7 +7,7 @@ using UnityEngine;
 namespace KAG.Unity.Network
 {
 	[Serializable]
-	public class NetworkSocket
+	public sealed class NetworkSocket
 	{
 		#region Nested types
 

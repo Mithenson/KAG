@@ -1,10 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using DarkRift;
 using DarkRift.Client;
 using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Shared.Network;
+using KAG.Unity.Common.Models;
 using Zenject;
 
 namespace KAG.Unity.Network
@@ -24,16 +26,16 @@ namespace KAG.Unity.Network
 
 		public async Task JoinMatch(string clientName, CancellationToken cancellationToken)
 		{
-			var connectionHandler = _container.Resolve<NetworkConnectionHandler>();
-			var connectionTask = connectionHandler.Connect(clientName, cancellationToken);
+			var connectionHandler = _container.Resolve<JoinMatchHandler>();
+			var connectionTask = connectionHandler.Execute(clientName, cancellationToken);
 
 			await connectionTask;
 
 			if (!connectionTask.IsCompleted)
 				return;
 			
-			SendPlayerIdentificationMessage(clientName);
 			_client.MessageReceived += OnClientMessageReceived;
+			SendPlayerIdentificationMessage(clientName);
 		}
 		private void SendPlayerIdentificationMessage(string clientName)
 		{

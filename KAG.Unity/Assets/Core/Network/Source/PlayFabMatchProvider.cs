@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using KAG.Unity.Common.Models;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.MultiplayerModels;
 using UnityEngine;
+using Zenject;
 using EntityKey = PlayFab.ClientModels.EntityKey;
 
 namespace KAG.Unity.Network
 {
 	[Serializable]
-	public sealed class PlayFabNetworkSocketProvider : INetworkSocketProvider
+	public sealed class PlayFabMatchProvider : IMatchProvider
 	{
 		#region Nested types
 
@@ -26,6 +28,8 @@ namespace KAG.Unity.Network
 		}
 
 		#endregion
+
+		public event Action<string> OnProgress; 
 	
 		private const int PollingIntervalInMilliseconds = 2_000;
 		private const int MatchmakingPollingIntervalInMilliseconds = 10_000;
@@ -45,12 +49,11 @@ namespace KAG.Unity.Network
 		[SerializeField]
 		private string _udpPortName;
 
-		private string _step;
 		private CancellationToken _cancellationToken;
 		private NetworkError _error;
 		private NetworkSocket _socket;
-	
-		public async Task<NetworkSocket> GetSocket(string clientName, CancellationToken cancellationToken)
+
+		public async Task<Match> GetMatch(string clientName, CancellationToken cancellationToken)
 		{
 			_cancellationToken = cancellationToken;
 			LoginWithCustomID(clientName);
@@ -61,18 +64,18 @@ namespace KAG.Unity.Network
 
 				if (cancellationToken.IsCancellationRequested)
 				{
-					await Task.FromCanceled<NetworkSocket>(cancellationToken);
+					await Task.FromCanceled<Match>(cancellationToken);
 					return null;
 				}
 
 				if (_error != null)
 				{
-					await Task.FromException<NetworkSocket>(new NetworkException(_error, $"Failed to get a socket through the {nameof(PlayFabClientAPI)}."));
+					await Task.FromException<Match>(new NetworkException(_error, $"Failed to get a socket through the {nameof(PlayFabClientAPI)}."));
 					return null;
 				}
 			}
 	
-			return _socket;	
+			return new Match(MatchKind.PlayFab, _socket);	
 		}
 
 		private void LoginWithCustomID(string clientName)
@@ -83,7 +86,7 @@ namespace KAG.Unity.Network
 				CreateAccount = true
 			};
 
-			_step = "Logging in";
+			OnProgress?.Invoke("Logging in");
 			PlayFabClientAPI.LoginWithCustomID(request, OnLoginResult, CachePlayFabError);
 		}
 
@@ -126,7 +129,7 @@ namespace KAG.Unity.Network
 				GiveUpAfterSeconds = _matchmakingTimeoutInSeconds
 			};
 		
-			_step = "Asking for match";
+			OnProgress?.Invoke("Asking for match");
 			PlayFabMultiplayerAPI.CreateMatchmakingTicket(request, OnCreateMatchmakingTicketResult, CachePlayFabError);
 		}
 	
@@ -135,7 +138,7 @@ namespace KAG.Unity.Network
 			if (_cancellationToken.IsCancellationRequested)
 				return;
 			
-			_step = "Searching for match";
+			OnProgress?.Invoke("Searching for match");
 			await PollMatchmakingTicket(ticketResult.TicketId);
 		}
 
@@ -167,7 +170,7 @@ namespace KAG.Unity.Network
 					break;
 
 				case nameof(MatchmakingStatus.Canceled):
-					_error = new CustomNetworkError(_step, "Matchmaking canceled");
+					_error = new CustomNetworkError("Matchmaking canceled");
 					break;
 
 				default:
@@ -184,7 +187,7 @@ namespace KAG.Unity.Network
 				QueueName = _matchmakingQueueName
 			};
 
-			_step = "Fetching match";
+			OnProgress?.Invoke("Fetching match");
 			PlayFabMultiplayerAPI.GetMatch(request, OnGetMatchResult, CachePlayFabError);
 		}
 
@@ -209,13 +212,13 @@ namespace KAG.Unity.Network
 
 			if (!tcpPort.HasValue)
 			{
-				_error = new CustomNetworkError(_step, "TCP port not found");
+				_error = new CustomNetworkError("TCP port not found");
 				return;
 			}
 
 			if (!udpPort.HasValue)
 			{
-				_error = new CustomNetworkError(_step, "UDP port not found");
+				_error = new CustomNetworkError("UDP port not found");
 				return;
 			}
 
@@ -223,6 +226,6 @@ namespace KAG.Unity.Network
 		}
 
 		private void CachePlayFabError(PlayFabError error) => 
-			_error = new PlayfabNetworkError(_step, error);
+			_error = new PlayfabNetworkError(error);
 	}
 }

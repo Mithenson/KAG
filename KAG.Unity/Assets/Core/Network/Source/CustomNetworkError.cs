@@ -2,11 +2,11 @@ namespace KAG.Unity.Network
 {
 	public sealed class CustomNetworkError : NetworkError
 	{
-		protected override string Name => _name;
+		public override string Message => _message;
 	
-		private string _name;
+		private string _message;
 	
-		public CustomNetworkError(string step, string name) : base(step) => 
-			_name = name;
+		public CustomNetworkError(string message) => 
+			_message = message;
 	}
 }
