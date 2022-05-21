@@ -1,15 +1,16 @@
 ﻿using System;
+using KAG.Unity.Common.DataBindings;
 
-namespace KAG.Unity.Common.DataBindings
+namespace KAG.Unity.Common.Observables
 {
 	public sealed class ObservableDataBindingSource : IDataBindingSource, IDisposable
 	{
 		public event Action<object> OnSourceChanged;
 
-		private Observable _observable;
+		private IObservable _observable;
 		private PropertyIdentifier _propertyIdentifier;
 
-		public ObservableDataBindingSource(Observable observable, PropertyIdentifier propertyIdentifier)
+		public ObservableDataBindingSource(IObservable observable, PropertyIdentifier propertyIdentifier)
 		{
 			_observable = observable;
 			_propertyIdentifier = propertyIdentifier;

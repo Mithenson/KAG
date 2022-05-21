@@ -4,6 +4,13 @@ namespace KAG.Shared.Extensions
 {
 	public static class StringExtensions
 	{
+		private static readonly char[] _formatCamelCaseNextCharToUpper = new char[]
+		{
+			' ',
+			',', 
+			'('
+		};
+		
 		public static string GenericityToString(this Type type)
 		{
 			if (!type.IsGenericType)
@@ -21,16 +28,44 @@ namespace KAG.Shared.Extensions
 
 		public static string FormatCamelCase(this string value)
 		{
-			for (var i = 1; i < value.Length; i++)
+			for (var i = 1; i < value.Length - 1; i++)
 			{
 				var character = value[i];
-				if (!char.IsUpper(character))
-					continue;
+				if (Array.IndexOf(_formatCamelCaseNextCharToUpper, character) != -1)
+				{
+					var replacementIndex = i + 1;
+					var nextCharacter = value[replacementIndex];
 
-				value = value.Remove(i, 1).Insert(i, $" {char.ToLower(character)}");
+					if (!char.IsLetter(nextCharacter))
+						continue;
+					
+					value = value.Remove(replacementIndex, 1).Insert(replacementIndex, $"{char.ToUpper(nextCharacter)}");
+					i += 2;
+					
+					continue;
+				}
+				
+				if (!character.IsUpperCaseLetter() || value[i - 1].IsUpperCaseLetter() && value[i + 1].IsUpperCaseLetter())
+					continue;
+			
+				value = value.Remove(i, 1).Insert(i, $" {character}");
+				i++;
 			}
 
 			return value;
 		}
+
+		public static string NicifyName(this string value)
+		{
+			value = value.Replace("_", string.Empty);
+
+			var firstCharacter = value[0];
+			value = value.Remove(0, 1).Insert(0, char.ToUpper(firstCharacter).ToString());
+
+			return value.FormatCamelCase();
+		}
+
+		public static bool IsUpperCaseLetter(this char value) =>
+			char.IsLetter(value) && char.IsUpper(value);
 	}
 }

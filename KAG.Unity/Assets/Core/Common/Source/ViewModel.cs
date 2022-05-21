@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using KAG.Unity.Common.DataBindings;
+using KAG.Unity.Common.Observables;
 
-namespace KAG.Unity.Common.DataBindings
+namespace KAG.Unity.Common
 {
 	public abstract class ViewModel : Observable, IDisposable
 	{
@@ -13,10 +15,12 @@ namespace KAG.Unity.Common.DataBindings
 		protected void AddBinding(DataBinding dataBinding) => 
 			_bindings.Add(dataBinding);
 
-		protected ReflectedPropertyDataBindingTarget<T> CreatePropertyDataBindingTarget<T>(string propertyName) => 
-			propertyName.ToReflectedPropertyDataBindingTarget<T>(this);
-		protected ReflectedMethodDataBindingTarget<T> CreateMethodDataBindingTarget<T>(string methodName) => 
-			methodName.ToReflectedMethodDataBindingTarget<T>(this);
+		protected IDataBindingTarget CreatePropertyDataBindingTarget(string propertyName) => 
+			propertyName.ToReflectedPropertyDataBindingTarget(this);
+		protected IDataBindingTarget CreateMethodDataBindingTarget(string methodName) => 
+			methodName.ToReflectedMethodDataBindingTarget(this);
+		protected IDataBindingTarget CreateParameterlessMethodDataBindingTarget<T>(string methodName) => 
+			methodName.ToReflectedParameterlessMethodDataBindingTarget(this);
 
 		void IDisposable.Dispose()
 		{

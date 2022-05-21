@@ -1,4 +1,4 @@
-﻿namespace KAG.Unity.Common.DataBindings
+﻿namespace KAG.Unity.Common.Observables
 {
 	public interface IObservable
 	{

@@ -1,5 +1,6 @@
 ﻿using System;
 using KAG.Unity.Common.DataBindings;
+using KAG.Unity.Common.Observables;
 
 namespace KAG.Unity.Common.Models
 {

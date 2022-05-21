@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KAG.Unity.Common.DataBindings
+namespace KAG.Unity.Common.Observables
 {
 	public sealed class PropertyChangedEventArgs : EventArgs
 	{

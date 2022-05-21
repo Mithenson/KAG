@@ -4,6 +4,8 @@ namespace KAG.Unity.Common.DataBindings
 {
 	public sealed class DataBinding : IDisposable
 	{
+		public bool IsActive;
+		
 		private readonly IDataBindingSource _source;
 		private readonly IDataBindingConverter _converter;
 		private readonly IDataBindingTarget _target;
@@ -15,10 +17,17 @@ namespace KAG.Unity.Common.DataBindings
 			_source = source;
 			_converter = converter;
 			_target = target;
+
+			IsActive = true;
 		}
 
-		private void OnSourceChanged(object value) => 
+		private void OnSourceChanged(object value)
+		{
+			if (!IsActive)
+				return;
+			
 			_target.Set(_converter.Convert(value));
+		}
 
 		public void Dispose()
 		{

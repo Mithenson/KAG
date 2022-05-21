@@ -8,7 +8,7 @@ namespace KAG.Unity.Common.DataBindings
 		private Action<T> _method;
 
 		public ReflectedMethodDataBindingTarget(object owner, string methodName) 
-			: this (owner, owner.GetType().GetMethod(methodName, BindingFlags.Public)) { }
+			: this (owner, methodName.ToMethodForDataBindingTarget(owner)) { }
 		public ReflectedMethodDataBindingTarget(object owner, MethodInfo method) =>
 			_method = (Action<T>)method.CreateDelegate(typeof(Action<T>), owner);
 

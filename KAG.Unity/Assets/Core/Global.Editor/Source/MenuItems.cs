@@ -2,22 +2,25 @@ using PlayFab;
 using UnityEditor;
 using UnityEngine;
 
-public static class MenuItems
+namespace KAG.Unity.Global.Editor
 {
-	[MenuItem("KAG/Temporary/Test functionality")]
-	public static void Test()
+	public static class MenuItems
 	{
-		var code = PlayFabErrorCode.AccountAlreadyLinked.ToString();
-
-		for (var i = 1; i < code.Length; i++)
+		[MenuItem("KAG/Temporary/Test functionality")]
+		public static void Test()
 		{
-			var character = code[i];
-			if (!char.IsUpper(character))
-				continue;
+			var code = PlayFabErrorCode.AccountAlreadyLinked.ToString();
 
-			code = code.Remove(i, 1).Insert(i, $" {char.ToLower(character)}");
-		}
+			for (var i = 1; i < code.Length; i++)
+			{
+				var character = code[i];
+				if (!char.IsUpper(character))
+					continue;
+
+				code = code.Remove(i, 1).Insert(i, $" {char.ToLower(character)}");
+			}
 		
-		Debug.Log(code);
+			Debug.Log(code);
+		}
 	}
 }
