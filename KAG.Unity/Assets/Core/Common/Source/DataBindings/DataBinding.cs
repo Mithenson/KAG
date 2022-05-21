@@ -1,24 +1,44 @@
 ﻿using System;
+using UnityEngine;
 
 namespace KAG.Unity.Common.DataBindings
 {
 	public sealed class DataBinding : IDisposable
 	{
-		public bool IsActive;
+		public bool IsActive { get; private set; }
 		
 		private readonly IDataBindingSource _source;
 		private readonly IDataBindingConverter _converter;
 		private readonly IDataBindingTarget _target;
 		
-		public DataBinding(IDataBindingSource source, IDataBindingTarget target) 
-			: this (source, new MockDataBindingConverter(), target) { }
-		public DataBinding(IDataBindingSource source, IDataBindingConverter converter, IDataBindingTarget target)
+		public DataBinding(IDataBindingSource source, IDataBindingTarget target, bool isActive = true) 
+			: this (source, new MockDataBindingConverter(), target, isActive) { }
+		public DataBinding(IDataBindingSource source, IDataBindingConverter converter, IDataBindingTarget target, bool isActive = true)
 		{
 			_source = source;
 			_converter = converter;
 			_target = target;
 
-			IsActive = true;
+			_source.OnSourceChanged += OnSourceChanged;
+			IMP_SetActive(isActive);
+		}
+
+		public void SetActive(bool value)
+		{
+			if (IsActive == value)
+				return;
+
+			IMP_SetActive(value);
+		}
+		private void IMP_SetActive(bool value)
+		{
+			if (!value)
+				IsActive = false;
+			else
+			{
+				IsActive = true;
+				IMP_OnSourceChanged(_source.Value);
+			}
 		}
 
 		private void OnSourceChanged(object value)
@@ -26,9 +46,11 @@ namespace KAG.Unity.Common.DataBindings
 			if (!IsActive)
 				return;
 			
-			_target.Set(_converter.Convert(value));
+			IMP_OnSourceChanged(value);
 		}
-
+		private void IMP_OnSourceChanged(object value) =>
+			_target.Set(_converter.Convert(value));
+		
 		public void Dispose()
 		{
 			_source.OnSourceChanged -= OnSourceChanged;

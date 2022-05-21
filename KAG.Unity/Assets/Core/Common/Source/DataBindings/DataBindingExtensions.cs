@@ -22,21 +22,26 @@ namespace KAG.Unity.Common.DataBindings
 		
 		public static ReflectedMethodDataBindingTarget<T> ToReflectedMethodDataBindingTarget<T>(this string methodName, object owner) =>
 			new ReflectedMethodDataBindingTarget<T>(owner, methodName);
-		public static IDataBindingTarget ToReflectedMethodDataBindingTarget(this string methodName, object owner)
+		public static IDataBindingTarget ToReflectedMethodDataBindingTarget(this string methodName, Type parameterType, object owner)
 		{
-			var method = methodName.ToMethodForDataBindingTarget(owner);
+			var method = methodName.ToMethodForDataBindingTarget(parameterType, owner);
 			var firstParameterType = method.GetParameters()[0].ParameterType;
 
 			var genericType = typeof(ReflectedMethodDataBindingTarget<>).MakeGenericType(firstParameterType);
 			return (IDataBindingTarget)Activator.CreateInstance(genericType, owner, method);
 		}
+		
+		public static MethodInfo ToMethodForDataBindingTarget(this string methodName, Type parameterType, object owner) => 
+			methodName.ToMethodForDataBindingTarget(parameterType, owner.GetType());
+		public static MethodInfo ToMethodForDataBindingTarget(this string methodName, Type parameterType, Type declaringType) => 
+			declaringType.GetMethod(methodName, new Type[] { parameterType });
 
 		public static ReflectedParameterlessMethodDataBindingTarget ToReflectedParameterlessMethodDataBindingTarget(this string methodName, object owner) =>
 			new ReflectedParameterlessMethodDataBindingTarget(owner, methodName);
-		
-		public static MethodInfo ToMethodForDataBindingTarget(this string methodName, object owner) => 
-			methodName.ToMethodForDataBindingTarget(owner.GetType());
-		public static MethodInfo ToMethodForDataBindingTarget(this string methodName, Type declaringType) => 
-			declaringType.GetMethod(methodName, DataBindingConstants.MethodSearchFlags);
+
+		public static MethodInfo ToParameterlessMethodForDataBindingTarget(this string methodName, object owner) => 
+			methodName.ToParameterlessMethodForDataBindingTarget(owner.GetType());
+		public static MethodInfo ToParameterlessMethodForDataBindingTarget(this string methodName, Type declaringType) => 
+			declaringType.GetMethod(methodName, Type.EmptyTypes);
 	}
 }

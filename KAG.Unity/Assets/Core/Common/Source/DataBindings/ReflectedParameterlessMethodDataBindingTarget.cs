@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using UnityEngine;
 
 namespace KAG.Unity.Common.DataBindings
 {
@@ -8,7 +9,7 @@ namespace KAG.Unity.Common.DataBindings
 		private Action _method;
 		
 		public ReflectedParameterlessMethodDataBindingTarget(object owner, string methodName) 
-			: this (owner, methodName.ToMethodForDataBindingTarget(owner)) { }
+			: this (owner, methodName.ToParameterlessMethodForDataBindingTarget(owner)) { }
 		public ReflectedParameterlessMethodDataBindingTarget(object owner, MethodInfo method) =>
 			_method = (Action)method.CreateDelegate(typeof(Action), owner);
 

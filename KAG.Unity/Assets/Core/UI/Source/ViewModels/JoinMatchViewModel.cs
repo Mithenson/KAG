@@ -52,8 +52,8 @@ namespace KAG.Unity.UI.ViewModels
 		public JoinMatchViewModel(JoinMatchModel model)
 			: base(model)
 		{
-			AddBinding(nameof(JoinMatchModel.Status), CreateMethodDataBindingTarget(nameof(OnStatusChanged)));
-			AddBinding(nameof(JoinMatchModel.Step), CreatePropertyDataBindingTarget(nameof(Step)));
+			AddMethodBinding(nameof(JoinMatchModel.Status), nameof(OnStatusChanged));
+			AddPropertyBinding(nameof(JoinMatchModel.Step), nameof(Step));
 		}
 		
 		private void OnStatusChanged(JoinMatchStatus status)

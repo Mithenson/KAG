@@ -12,7 +12,7 @@ namespace KAG.Unity.Common.DataBindings
 		public ReflectedPropertyDataBindingTarget(object owner, PropertyInfo property) =>
 			_setter = (Action<T>)property.SetMethod.CreateDelegate(typeof(Action<T>), owner);
 
-		public void Set(object value) => 
+		public void Set(object value) =>
 			_setter((T)value);
 	}
 }

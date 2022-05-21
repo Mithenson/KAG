@@ -45,7 +45,7 @@ namespace KAG.Unity.Common.DataBindings
 				_name = name;
 			}
 
-			public IDataBindingTarget GetDataBinding(UnityEngine.Object instance)
+			public IDataBindingTarget GetDataBinding(Type sourcePropertyType, UnityEngine.Object instance)
 			{
 				switch (_mode)
 				{
@@ -53,7 +53,7 @@ namespace KAG.Unity.Common.DataBindings
 						return _name.ToReflectedPropertyDataBindingTarget(instance);
 				
 					case TargetBindingMode.Method:
-						return _name.ToReflectedMethodDataBindingTarget(instance);
+						return _name.ToReflectedMethodDataBindingTarget(sourcePropertyType, instance);
 			
 					case TargetBindingMode.ParameterlessMethod:
 						return _name.ToReflectedParameterlessMethodDataBindingTarget(instance);
@@ -128,28 +128,25 @@ namespace KAG.Unity.Common.DataBindings
 			try
 			{
 				var source = GetDataBindingSource(container);
-				var target = GetDataBindingTarget();
+				var target = GetDataBindingTarget(source.GetProperty().PropertyType);
 
 				_value = TryGetDataBindingConverter(out var converter) 
-					? new DataBinding(source, converter, target) 
-					: new DataBinding(source, target);
+					? new DataBinding(source, converter, target, enabled) 
+					: new DataBinding(source, target, enabled);
 			}
 			catch(Exception exception)
 			{
 				Debug.LogException(exception, this);
 			}
-
-			if (!enabled)
-				_value.IsActive = false;
 		}
 
 		private void OnEnable() =>
-			_value.IsActive = true;
+			_value?.SetActive(enabled);
 
-		private void OnDisable() => 
-			_value.IsActive = false;
-
-		public IDataBindingSource GetDataBindingSource(DiContainer container)
+		private void OnDisable() =>
+			_value?.SetActive(enabled);
+		
+		public ObservableDataBindingSource GetDataBindingSource(DiContainer container)
 		{
 			switch (_sourceMode)
 			{
@@ -205,12 +202,12 @@ namespace KAG.Unity.Common.DataBindings
 			return new DataBindingDecoratedConverter(_converters[index], GetChildConverter(index + 1));
 		}
 		
-		public IDataBindingTarget GetDataBindingTarget()
+		public IDataBindingTarget GetDataBindingTarget(Type sourcePropertyType)
 		{
 			if (_targetInstance == null)
 				throw new InvalidOperationException($"Data binding cannot be built as there is no target instance assigned.");
 
-			return _targetBinding.GetDataBinding(_targetInstance);
+			return _targetBinding.GetDataBinding(sourcePropertyType, _targetInstance);
 		}
 
 		private bool TryGetSourceObservableType(out Type type)
@@ -274,6 +271,7 @@ namespace KAG.Unity.Common.DataBindings
 		}
 		private IList<ValueDropdownItem<string>> IMP_GetAvailableSourcePropertyNames(Type type) => 
 			type.GetProperties(DataBindingConstants.PropertySearchFlags)
+			   .Where(property => property.DeclaringType == type)
 			   .Select(property => new ValueDropdownItem<string>(property.Name.NicifyName(), property.Name))
 			   .ToArray();
 
