@@ -38,7 +38,7 @@ namespace KAG.Unity.SceneManagement
         
         public override void InstallBindings()
         {
-           
+            
         }
     }
 }

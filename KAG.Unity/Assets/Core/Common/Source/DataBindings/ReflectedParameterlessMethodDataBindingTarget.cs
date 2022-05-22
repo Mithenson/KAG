@@ -15,9 +15,7 @@ namespace KAG.Unity.Common.DataBindings
 
 		public void Set(object value)
 		{
-			var toggle = (bool)value;
-			
-			if (toggle)
+			if (value == null || value is bool toggle && toggle)
 				_method();
 		}
 	}
