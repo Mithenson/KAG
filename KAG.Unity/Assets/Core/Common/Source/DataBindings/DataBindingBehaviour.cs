@@ -10,7 +10,7 @@ using Zenject;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class DataBindingBehaviour : SerializedMonoBehaviour
+	public sealed class DataBindingBehaviour : MonoBehaviour
 	{
 		#region Nested types
 
@@ -19,53 +19,12 @@ namespace KAG.Unity.Common.DataBindings
 			Injection,
 			Behaviour
 		}
-		
-		private enum TargetBindingMode
-		{
-			Property,
-			Method,
-			ParameterlessMethod
-		}
-		
-		private struct TargetBinding
-		{
-			public readonly static TargetBinding Default = new TargetBinding(TargetBindingMode.Property, string.Empty);
-			
-			[SerializeField]
-			[HideInInspector]
-			private TargetBindingMode _mode;
-			
-			[SerializeField]
-			[HideInInspector]
-			private string _name;
-
-			public TargetBinding(TargetBindingMode mode, string name)
-			{
-				_mode = mode;
-				_name = name;
-			}
-
-			public IDataBindingTarget GetDataBinding(Type sourcePropertyType, UnityEngine.Object instance)
-			{
-				switch (_mode)
-				{
-					case TargetBindingMode.Property:
-						return _name.ToReflectedPropertyDataBindingTarget(instance);
-				
-					case TargetBindingMode.Method:
-						return _name.ToReflectedMethodDataBindingTarget(sourcePropertyType, instance);
-			
-					case TargetBindingMode.ParameterlessMethod:
-						return _name.ToReflectedParameterlessMethodDataBindingTarget(instance);
-
-					default:
-						throw new ArgumentOutOfRangeException($"Data binding cannot be built as `{nameof(_mode)}={_mode}` isn't handled.");
-				}
-			}
-		}
 
 		#endregion
 		
+		#if UNITY_EDITOR
+		[OnValueChanged(nameof(OnSourceModeChanged))]
+		#endif
 		[SerializeField]
 		[FoldoutGroup("Source")]
 		[LabelText("Mode")]
@@ -101,7 +60,7 @@ namespace KAG.Unity.Common.DataBindings
 		#if UNITY_EDITOR
 		[ShowIf(nameof(HasValidSourcePropertyType))]
 		#endif
-		[SerializeField]
+		[SerializeReference]
 		private IDataBindingConverter[] _converters = new IDataBindingConverter[0];
 		
 		#if UNITY_EDITOR
@@ -110,15 +69,15 @@ namespace KAG.Unity.Common.DataBindings
 		#endif
 		[SerializeField]
 		[LabelText("Instance")]
-		private UnityEngine.Object _targetInstance;
+		private UnityEngine.Object _targetInstance = null;
 
 		#if UNITY_EDITOR
-		[ValueDropdown(nameof(GetAvailableTargetBindingNames))]
+		[ValueDropdown(nameof(GetAvailableDataBindingTargetBuilders))]
 		#endif
 		[SerializeField]
 		[FoldoutGroup("Target")]
 		[LabelText("Binding")]
-		private TargetBinding _targetBinding;
+		private DataBindingTargetBuilder _dataBindingTargetBuilder = DataBindingTargetBuilder.Default;
 
 		private DataBinding _value;
 
@@ -205,9 +164,9 @@ namespace KAG.Unity.Common.DataBindings
 		public IDataBindingTarget GetDataBindingTarget(Type sourcePropertyType)
 		{
 			if (_targetInstance == null)
-				throw new InvalidOperationException($"Data binding cannot be built as there is no target instance assigned.");
+				throw new InvalidOperationException("Data binding cannot be built as there is no target instance assigned.");
 
-			return _targetBinding.GetDataBinding(sourcePropertyType, _targetInstance);
+			return _dataBindingTargetBuilder.Build(sourcePropertyType, _targetInstance);
 		}
 
 		private bool TryGetSourceObservableType(out Type type)
@@ -249,18 +208,19 @@ namespace KAG.Unity.Common.DataBindings
 			
 		#if UNITY_EDITOR
 
-		private IList<ValueDropdownItem<string>> GetAllowedSourceObservableAssemblyQualifiedTypeNames() => AppDomain.CurrentDomain
-		   .GetAssemblies()
-		   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
-		   .SelectMany(assembly => assembly.GetTypes())
-		   .Where(type =>
-			{
-				return !type.IsAbstract
-				       && typeof(IObservable).IsAssignableFrom(type)
-				       && !typeof(UnityEngine.Object).IsAssignableFrom(type);
-			})
-		   .Select(type => new ValueDropdownItem<string>(type.Name.NicifyName(), type.AssemblyQualifiedName))
-		   .ToArray();
+		private IList<ValueDropdownItem<string>> GetAllowedSourceObservableAssemblyQualifiedTypeNames() => 
+			AppDomain.CurrentDomain
+			   .GetAssemblies()
+			   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
+			   .SelectMany(assembly => assembly.GetTypes())
+			   .Where(type =>
+				{
+					return !type.IsAbstract
+					       && typeof(IObservable).IsAssignableFrom(type)
+					       && !typeof(UnityEngine.Object).IsAssignableFrom(type);
+				})
+			   .Select(type => new ValueDropdownItem<string>(type.Name.NicifyName(), type.AssemblyQualifiedName))
+			   .ToArray();
 
 		private IList<ValueDropdownItem<string>> GetAvailableSourcePropertyNames()
 		{
@@ -275,6 +235,13 @@ namespace KAG.Unity.Common.DataBindings
 			   .Select(property => new ValueDropdownItem<string>(property.Name.NicifyName(), property.Name))
 			   .ToArray();
 
+		private void OnSourceModeChanged()
+		{
+			_sourceObservableAssemblyQualifiedTypeName = string.Empty;
+			_sourceObservableInstance = null;
+			
+			OnSourceObservableChanged();
+		}
 		private void OnSourceObservableChanged() => 
 			_sourcePropertyName = string.Empty;
 
@@ -306,56 +273,19 @@ namespace KAG.Unity.Common.DataBindings
 		}
 
 		private void OnTargetInstanceChanged() => 
-			_targetBinding = TargetBinding.Default;
+			_dataBindingTargetBuilder = DataBindingTargetBuilder.Default;
 
-		private IList<ValueDropdownItem<TargetBinding>> GetAvailableTargetBindingNames()
+		private IList<ValueDropdownItem<DataBindingTargetBuilder>> GetAvailableDataBindingTargetBuilders()
 		{
 			if (!TryGetSourcePropertyType(out var sourcePropertyType)
-				|| _targetInstance == null)
-				return new ValueDropdownItem<TargetBinding>[]
+			    || _targetInstance == null)
+				return new ValueDropdownItem<DataBindingTargetBuilder>[]
 				{
-					new ValueDropdownItem<TargetBinding>("None", TargetBinding.Default)
+					DataBindingConstants.DefaultDataBindingTargetBuilderDropdownItem
 				};
 
 			var targetInstanceType = _targetInstance.GetType();
-
-			return targetInstanceType.GetProperties(DataBindingConstants.PropertySearchFlags)
-			   .Where(property => property.PropertyType == sourcePropertyType)
-			   .Select(property =>
-				{
-					var name = property.Name.NicifyName();
-					var binding = new TargetBinding(TargetBindingMode.Property, property.Name);
-					
-					return new ValueDropdownItem<TargetBinding>(name, binding);
-				})
-			   .Concat(targetInstanceType.GetMethods(DataBindingConstants.MethodSearchFlags)
-			   .Where(method => FilterCandidateTargetMethods(method, sourcePropertyType))
-			   .Select(method =>
-				{
-					var name = method.GetDetailedName().NicifyName();
-					var binding = ConvertMethodToTargetBinding(method);
-					
-					return new ValueDropdownItem<TargetBinding>(name, binding);
-				}))
-			   .Prepend(new ValueDropdownItem<TargetBinding>("None", TargetBinding.Default))
-			   .ToArray();
-		}
-		private bool FilterCandidateTargetMethods(MethodInfo method, Type sourcePropertyType)
-		{
-			if (method.IsSpecialName)
-				return false;
-			
-			if (sourcePropertyType != typeof(bool))
-				return method.HasASingleParameterOfType(sourcePropertyType);
-
-			return method.IsParameterlessMethod() || method.HasASingleParameterOfType(sourcePropertyType);
-		}
-		private TargetBinding ConvertMethodToTargetBinding(MethodInfo method)
-		{
-			if (method.IsParameterlessMethod())
-				return new TargetBinding(TargetBindingMode.ParameterlessMethod, method.Name);
-
-			return new TargetBinding(TargetBindingMode.Method, method.Name);
+			return DataBindingUtilities.Editor.GetAvailableDataBindingTargetBuilders(sourcePropertyType, targetInstanceType);
 		}
 
 		#endif

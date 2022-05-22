@@ -1,4 +1,6 @@
-﻿namespace KAG.Unity.Common
+﻿using KAG.Unity.Common.Observables;
+
+namespace KAG.Unity.Common
 {
 	public static class Constants
 	{

@@ -44,12 +44,15 @@ namespace KAG.Shared.Extensions
 					
 					continue;
 				}
-				
-				if (!character.IsUpperCaseLetter() || value[i - 1].IsUpperCaseLetter() && value[i + 1].IsUpperCaseLetter())
-					continue;
-			
-				value = value.Remove(i, 1).Insert(i, $" {character}");
-				i++;
+
+				if (character.IsUpperCaseLetter()
+				    && (value[i + 1].IsUpperCaseLetter() && value[i - 1].IsLowerCaseLetter()
+				        || value[i - 1].IsUpperCaseLetter() && value[i + 1].IsLowerCaseLetter()
+				        || value[i - 1].IsLowerCaseLetter() && value[i + 1].IsLowerCaseLetter()))
+				{
+					value = value.Remove(i, 1).Insert(i, $" {character}");
+					i++;
+				}
 			}
 
 			return value;
@@ -67,5 +70,7 @@ namespace KAG.Shared.Extensions
 
 		public static bool IsUpperCaseLetter(this char value) =>
 			char.IsLetter(value) && char.IsUpper(value);
+		public static bool IsLowerCaseLetter(this char value) =>
+			char.IsLetter(value) && char.IsLower(value);
 	}
 }
