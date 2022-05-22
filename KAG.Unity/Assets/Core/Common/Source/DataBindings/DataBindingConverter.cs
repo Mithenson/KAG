@@ -6,13 +6,16 @@ namespace KAG.Unity.Common.DataBindings
 	{
 		public Type OutputType => typeof(TOutput);
 
-		public object Convert(object value)
+		object IDataBindingConverter.Convert(object value) => ConvertImplicitly(value);
+		TOutput IDataBindingConverter<TInput, TOutput>.Convert(TInput input) => ConvertExplicitly(input);
+		
+		public object ConvertImplicitly(object value)
 		{
 			if (value is TInput input)
-				return Convert(input);
+				return ConvertExplicitly(input);
 
 			return value;
 		}
-		public abstract TOutput Convert(TInput input);
+		public abstract TOutput ConvertExplicitly(TInput input);
 	}
 }

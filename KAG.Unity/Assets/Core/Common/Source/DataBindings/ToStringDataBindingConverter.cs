@@ -3,11 +3,9 @@
 namespace KAG.Unity.Common.DataBindings
 {
 	[Serializable]
-	public sealed class ToStringDataBindingConverter : IDataBindingConverter
+	public sealed class ToStringDataBindingConverter : DataBindingConverter<object, string>
 	{
-		public Type OutputType => typeof(string);
-		
-		public object Convert(object value) => 
+		public override string ConvertExplicitly(object value) => 
 			value.ToString();
 	}
 }
