@@ -1,4 +1,6 @@
-﻿namespace KAG.Unity.Common.Observables
+﻿using JetBrains.Annotations;
+
+namespace KAG.Unity.Common.Observables
 {
 	public interface IObservable
 	{

@@ -2,7 +2,7 @@
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public interface IDataBindingSource
+	public interface IValueDataBindingSource
 	{
 		event Action<object> OnSourceChanged;
 		object Value { get; }

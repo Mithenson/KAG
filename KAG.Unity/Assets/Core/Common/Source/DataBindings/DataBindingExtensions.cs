@@ -7,12 +7,12 @@ namespace KAG.Unity.Common.DataBindings
 	{
 		public static ReflectedPropertyDataBindingTarget<T> ToReflectedPropertyDataBindingTarget<T>(this string propertyName, object owner) =>
 			new ReflectedPropertyDataBindingTarget<T>(owner, propertyName);
-		public static IDataBindingTarget ToReflectedPropertyDataBindingTarget(this string propertyName, object owner)
+		public static IValueDataBindingTarget ToReflectedPropertyDataBindingTarget(this string propertyName, object owner)
 		{
 			var property = propertyName.ToPropertyForDataBindingTarget(owner);
 
 			var genericType = typeof(ReflectedPropertyDataBindingTarget<>).MakeGenericType(property.PropertyType);
-			return (IDataBindingTarget)Activator.CreateInstance(genericType, owner, property);
+			return (IValueDataBindingTarget)Activator.CreateInstance(genericType, owner, property);
 		}
 		
 		public static PropertyInfo ToPropertyForDataBindingTarget(this string propertyName, object owner) =>
@@ -22,13 +22,13 @@ namespace KAG.Unity.Common.DataBindings
 		
 		public static ReflectedMethodDataBindingTarget<T> ToReflectedMethodDataBindingTarget<T>(this string methodName, object owner) =>
 			new ReflectedMethodDataBindingTarget<T>(owner, methodName);
-		public static IDataBindingTarget ToReflectedMethodDataBindingTarget(this string methodName, Type parameterType, object owner)
+		public static IValueDataBindingTarget ToReflectedMethodDataBindingTarget(this string methodName, Type parameterType, object owner)
 		{
 			var method = methodName.ToMethodForDataBindingTarget(parameterType, owner);
 			var firstParameterType = method.GetParameters()[0].ParameterType;
 
 			var genericType = typeof(ReflectedMethodDataBindingTarget<>).MakeGenericType(firstParameterType);
-			return (IDataBindingTarget)Activator.CreateInstance(genericType, owner, method);
+			return (IValueDataBindingTarget)Activator.CreateInstance(genericType, owner, method);
 		}
 		
 		public static MethodInfo ToMethodForDataBindingTarget(this string methodName, Type parameterType, object owner) => 

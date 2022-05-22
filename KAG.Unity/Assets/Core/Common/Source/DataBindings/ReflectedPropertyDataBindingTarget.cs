@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class ReflectedPropertyDataBindingTarget<T> : IDataBindingTarget
+	public sealed class ReflectedPropertyDataBindingTarget<T> : IValueDataBindingTarget
 	{
 		private Action<T> _setter;
 

@@ -3,23 +3,22 @@ using UnityEngine;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class DataBinding : IDisposable
+	public sealed class ValueDataBinding : IDataBinding
 	{
 		public bool IsActive { get; private set; }
 		
-		private readonly IDataBindingSource _source;
+		private readonly IValueDataBindingSource _source;
 		private readonly IDataBindingConverter _converter;
-		private readonly IDataBindingTarget _target;
+		private readonly IValueDataBindingTarget _target;
 		
-		public DataBinding(IDataBindingSource source, IDataBindingTarget target, bool isActive = true) 
+		public ValueDataBinding(IValueDataBindingSource source, IValueDataBindingTarget target, bool isActive = true) 
 			: this (source, new MockDataBindingConverter(), target, isActive) { }
-		public DataBinding(IDataBindingSource source, IDataBindingConverter converter, IDataBindingTarget target, bool isActive = true)
+		public ValueDataBinding(IValueDataBindingSource source, IDataBindingConverter converter, IValueDataBindingTarget target, bool isActive = true)
 		{
 			_source = source;
 			_converter = converter;
 			_target = target;
-
-			_source.OnSourceChanged += OnSourceChanged;
+			
 			IMP_SetActive(isActive);
 		}
 
@@ -33,11 +32,16 @@ namespace KAG.Unity.Common.DataBindings
 		private void IMP_SetActive(bool value)
 		{
 			if (!value)
+			{
 				IsActive = false;
+				_source.OnSourceChanged -= OnSourceChanged;
+			}
 			else
 			{
 				IsActive = true;
 				IMP_OnSourceChanged(_source.Value);
+				
+				_source.OnSourceChanged += OnSourceChanged;
 			}
 		}
 
@@ -53,10 +57,13 @@ namespace KAG.Unity.Common.DataBindings
 		
 		public void Dispose()
 		{
-			_source.OnSourceChanged -= OnSourceChanged;
+			IMP_SetActive(false);
 			
 			if (_source is IDisposable disposableSource)
 				disposableSource.Dispose();
+			
+			if (_converter is IDisposable disposableConverter)
+				disposableConverter.Dispose();
 
 			if (_target is IDisposable disposableTarget)
 				disposableTarget.Dispose();

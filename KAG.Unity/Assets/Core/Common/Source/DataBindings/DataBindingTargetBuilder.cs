@@ -22,7 +22,7 @@ namespace KAG.Unity.Common.DataBindings
 			_name = name;
 		}
 
-		public IDataBindingTarget Build(Type sourceType, object instance)
+		public IValueDataBindingTarget Build(Type sourceType, object instance)
 		{
 			switch (_mode)
 			{

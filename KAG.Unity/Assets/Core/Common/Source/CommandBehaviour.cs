@@ -55,7 +55,7 @@ namespace KAG.Unity.Common
 		[LabelText("Binding")]
 		private DataBindingTargetBuilder _dataBindingTargetBuilder = DataBindingTargetBuilder.Default;
 
-		protected IDataBindingTarget _dataBindingTarget;
+		protected IValueDataBindingTarget _dataBindingTarget;
 
 		[Inject]
 		public void Inject(DiContainer container)
@@ -73,7 +73,7 @@ namespace KAG.Unity.Common
 		public void Execute() => 
 			_dataBindingTarget.Set(default);
 
-		private IDataBindingTarget GetDataBindingTarget(DiContainer container)
+		private IValueDataBindingTarget GetDataBindingTarget(DiContainer container)
 		{
 			var target = GetTarget(container);
 			return _dataBindingTargetBuilder.Build(SourceType, target);

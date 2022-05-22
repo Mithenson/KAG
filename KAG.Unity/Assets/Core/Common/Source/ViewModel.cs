@@ -8,12 +8,12 @@ namespace KAG.Unity.Common
 {
 	public abstract class ViewModel : Observable, IDisposable
 	{
-		private List<DataBinding> _bindings;
+		private List<IDataBinding> _bindings;
 
 		public ViewModel() => 
-			_bindings = new List<DataBinding>();
+			_bindings = new List<IDataBinding>();
 
-		protected void AddBinding(DataBinding dataBinding) => 
+		protected void AddBinding(ValueDataBinding dataBinding) => 
 			_bindings.Add(dataBinding);
 
 		void IDisposable.Dispose()
@@ -32,8 +32,8 @@ namespace KAG.Unity.Common
 		public ViewModel(TModel model) => 
 			_model = model;
 
-		protected void AddBinding(string propertyName, IDataBindingTarget dataBindingTarget) =>
-			AddBinding(new DataBinding(new ObservableDataBindingSource(_model, new PropertyIdentifier(propertyName)), dataBindingTarget));
+		protected void AddBinding(string propertyName, IValueDataBindingTarget dataBindingTarget) =>
+			AddBinding(new ValueDataBinding(new ObservableDataBindingSource(_model, new PropertyIdentifier(propertyName)), dataBindingTarget));
 
 		protected void AddPropertyBinding(string sourcePropertyName, string targetPropertyName) => 
 			AddBinding(sourcePropertyName, targetPropertyName.ToReflectedPropertyDataBindingTarget(this));

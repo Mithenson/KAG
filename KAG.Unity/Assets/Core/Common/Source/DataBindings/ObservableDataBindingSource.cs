@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class ObservableDataBindingSource : IDataBindingSource, IDisposable
+	public sealed class ObservableDataBindingSource : IValueDataBindingSource, IDisposable
 	{
 		#region Nested types
 

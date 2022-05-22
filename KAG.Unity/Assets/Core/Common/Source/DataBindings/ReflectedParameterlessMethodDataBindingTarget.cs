@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class ReflectedParameterlessMethodDataBindingTarget : IDataBindingTarget
+	public sealed class ReflectedParameterlessMethodDataBindingTarget : IValueDataBindingTarget
 	{
 		private Action _method;
 		

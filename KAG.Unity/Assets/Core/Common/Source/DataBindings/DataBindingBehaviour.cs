@@ -10,45 +10,138 @@ using Zenject;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class DataBindingBehaviour : MonoBehaviour
+	public enum SourceBuildMode
 	{
-		#region Nested types
-
-		private enum SourceMode
-		{
-			Injection,
-			Behaviour
-		}
-
-		#endregion
-		
+		Injection,
+		Behaviour
+	}
+	
+	[Serializable]
+	public sealed class SourceBuilder
+	{
 		#if UNITY_EDITOR
 		[OnValueChanged(nameof(OnSourceModeChanged))]
 		#endif
 		[SerializeField]
-		[FoldoutGroup("Source")]
 		[LabelText("Mode")]
-		private SourceMode _sourceMode = SourceMode.Injection;
+		private SourceBuildMode sourceBuildMode = SourceBuildMode.Injection;
 
 		#if UNITY_EDITOR
 		[ValueDropdown(nameof(GetAllowedSourceObservableAssemblyQualifiedTypeNames))]
-		[OnValueChanged(nameof(OnSourceObservableChanged))]
 		#endif
 		[SerializeField]
-		[FoldoutGroup("Source")]
 		[LabelText("Type")]
-		[ShowIf(nameof(_sourceMode), SourceMode.Injection)]
+		[ShowIf(nameof(sourceBuildMode), SourceBuildMode.Injection)]
 		private string _sourceObservableAssemblyQualifiedTypeName = string.Empty;
+		
+		[SerializeField]
+		[LabelText("Instance")]
+		[ShowIf(nameof(sourceBuildMode), SourceBuildMode.Behaviour)]
+		private ObservableBehaviour _sourceObservableInstance = null;
+		
+		public IObservable Build(DiContainer container)
+		{
+			switch (sourceBuildMode)
+			{
+				case SourceBuildMode.Injection:
+				{
+					if (string.IsNullOrEmpty(_sourceObservableAssemblyQualifiedTypeName))
+						throw new InvalidOperationException($"Source cannot be built with `{nameof(sourceBuildMode)}={sourceBuildMode}` as the serialized type is null.");
 
+					if (!TryConvertSourceObservableAssemblyQualifiedTypeName(out var sourceObservableType))
+						throw new InvalidOperationException(
+							$"Source cannot be built with `{nameof(sourceBuildMode)}={sourceBuildMode}` "
+							+ $"as the serialized `{nameof(_sourceObservableAssemblyQualifiedTypeName)}={_sourceObservableAssemblyQualifiedTypeName}` is invalid.");
+
+					return (IObservable)container.Resolve(sourceObservableType);
+				}
+
+				case SourceBuildMode.Behaviour:
+				{
+					if (_sourceObservableInstance == null)
+						throw new InvalidOperationException($"Source cannot be built with `{nameof(sourceBuildMode)}={sourceBuildMode}` as the serialized behaviour is unassigned.");
+						
+					return _sourceObservableInstance;
+				}
+					
+				default:
+					throw new ArgumentOutOfRangeException($"Data binding cannot be built as `{nameof(sourceBuildMode)}={sourceBuildMode}` isn't handled.");
+			}
+		}
+		
+		public bool TryGetSourceObservableType(out Type type)
+		{
+			type = default;
+			
+			switch (sourceBuildMode)
+			{
+				case SourceBuildMode.Injection:
+					return !string.IsNullOrEmpty(_sourceObservableAssemblyQualifiedTypeName) 
+					       && TryConvertSourceObservableAssemblyQualifiedTypeName(out type);
+
+				case SourceBuildMode.Behaviour:
+				{
+					if (_sourceObservableInstance == null)
+						return false;
+
+					type = _sourceObservableInstance.GetType();
+					return true;
+				}
+			}
+
+			return false;
+		}
+		public bool TryConvertSourceObservableAssemblyQualifiedTypeName(out Type type)
+		{
+			try
+			{
+				type = Type.GetType(_sourceObservableAssemblyQualifiedTypeName);
+			}
+			catch
+			{
+				type = default;
+				return false;
+			}
+
+			return type != null;
+		}
+		
+		#if UNITY_EDITOR
+		
+		private IList<ValueDropdownItem<string>> GetAllowedSourceObservableAssemblyQualifiedTypeNames() => 
+			AppDomain.CurrentDomain
+			   .GetAssemblies()
+			   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
+			   .SelectMany(assembly => assembly.GetTypes())
+			   .Where(type =>
+				{
+					return !type.IsAbstract
+					       && typeof(IObservable).IsAssignableFrom(type)
+					       && !typeof(UnityEngine.Object).IsAssignableFrom(type);
+				})
+			   .Select(type => new ValueDropdownItem<string>(type.Name.NicifyName(), type.AssemblyQualifiedName))
+			   .ToArray();
+		
+		private void OnSourceModeChanged()
+		{
+			_sourceObservableAssemblyQualifiedTypeName = string.Empty;
+			_sourceObservableInstance = null;
+		}
+		
+		#endif
+	}
+	
+	public sealed class DataBindingBehaviour : MonoBehaviour
+	{
 		#if UNITY_EDITOR
 		[OnValueChanged(nameof(OnSourceObservableChanged))]
 		#endif
 		[SerializeField]
 		[FoldoutGroup("Source")]
-		[LabelText("Instance")]
-		[ShowIf(nameof(_sourceMode), SourceMode.Behaviour)]
-		private ObservableBehaviour _sourceObservableInstance = null;
-
+		[InlineProperty]
+		[HideLabel]
+		private SourceBuilder _sourceBuilder = new SourceBuilder();
+	
 		#if UNITY_EDITOR
 		[ValueDropdown(nameof(GetAvailableSourcePropertyNames))]
 		#endif
@@ -79,7 +172,7 @@ namespace KAG.Unity.Common.DataBindings
 		[LabelText("Binding")]
 		private DataBindingTargetBuilder _dataBindingTargetBuilder = DataBindingTargetBuilder.Default;
 
-		private DataBinding _value;
+		private ValueDataBinding _value;
 
 		[Inject]
 		public void Inject(DiContainer container)
@@ -90,8 +183,8 @@ namespace KAG.Unity.Common.DataBindings
 				var target = GetDataBindingTarget(source.GetProperty().PropertyType);
 
 				_value = TryGetDataBindingConverter(out var converter) 
-					? new DataBinding(source, converter, target, enabled) 
-					: new DataBinding(source, target, enabled);
+					? new ValueDataBinding(source, converter, target, enabled) 
+					: new ValueDataBinding(source, target, enabled);
 			}
 			catch(Exception exception)
 			{
@@ -107,33 +200,8 @@ namespace KAG.Unity.Common.DataBindings
 		
 		public ObservableDataBindingSource GetDataBindingSource(DiContainer container)
 		{
-			switch (_sourceMode)
-			{
-				case SourceMode.Injection:
-				{
-					if (string.IsNullOrEmpty(_sourceObservableAssemblyQualifiedTypeName))
-						throw new InvalidOperationException($"Data binding cannot be built with `{nameof(_sourceMode)}={_sourceMode}` as the serialized type is null.");
-
-					if (!TryConvertSourceObservableAssemblyQualifiedTypeName(out var sourceObservableType))
-						throw new InvalidOperationException(
-							$"Data binding cannot be built with `{nameof(_sourceMode)}={_sourceMode}` "
-							+ $"as the serialized `{nameof(_sourceObservableAssemblyQualifiedTypeName)}={_sourceObservableAssemblyQualifiedTypeName}` is invalid.");
-
-					var observable = (IObservable)container.Resolve(sourceObservableType);
-					return new ObservableDataBindingSource(observable, new PropertyIdentifier(_sourcePropertyName));
-				}
-
-				case SourceMode.Behaviour:
-				{
-					if (_sourceObservableInstance == null)
-						throw new InvalidOperationException($"Data binding cannot be built with `{nameof(_sourceMode)}={_sourceMode}` as the serialized behaviour is unassigned.");
-						
-					return new ObservableDataBindingSource(_sourceObservableInstance, new PropertyIdentifier(_sourcePropertyName));
-				}
-					
-				default:
-					throw new ArgumentOutOfRangeException($"Data binding cannot be built as `{nameof(_sourceMode)}={_sourceMode}` isn't handled.");
-			}
+			var sourceObservable = _sourceBuilder.Build(container);
+			return new ObservableDataBindingSource(sourceObservable, new PropertyIdentifier(_sourcePropertyName));
 		}
 		
 		private bool TryGetDataBindingConverter(out IDataBindingConverter converter)
@@ -161,7 +229,7 @@ namespace KAG.Unity.Common.DataBindings
 			return new DataBindingDecoratedConverter(_converters[index], GetChildConverter(index + 1));
 		}
 		
-		public IDataBindingTarget GetDataBindingTarget(Type sourcePropertyType)
+		public IValueDataBindingTarget GetDataBindingTarget(Type sourcePropertyType)
 		{
 			if (_targetInstance == null)
 				throw new InvalidOperationException("Data binding cannot be built as there is no target instance assigned.");
@@ -169,62 +237,14 @@ namespace KAG.Unity.Common.DataBindings
 			return _dataBindingTargetBuilder.Build(sourcePropertyType, _targetInstance);
 		}
 
-		private bool TryGetSourceObservableType(out Type type)
-		{
-			type = default;
-			
-			switch (_sourceMode)
-			{
-				case SourceMode.Injection:
-					return !string.IsNullOrEmpty(_sourceObservableAssemblyQualifiedTypeName) 
-					       && TryConvertSourceObservableAssemblyQualifiedTypeName(out type);
-
-				case SourceMode.Behaviour:
-				{
-					if (_sourceObservableInstance == null)
-						return false;
-
-					type = _sourceObservableInstance.GetType();
-					return true;
-				}
-			}
-
-			return false;
-		}
-		private bool TryConvertSourceObservableAssemblyQualifiedTypeName(out Type type)
-		{
-			try
-			{
-				type = Type.GetType(_sourceObservableAssemblyQualifiedTypeName);
-			}
-			catch
-			{
-				type = default;
-				return false;
-			}
-
-			return type != null;
-		}
-			
 		#if UNITY_EDITOR
-
-		private IList<ValueDropdownItem<string>> GetAllowedSourceObservableAssemblyQualifiedTypeNames() => 
-			AppDomain.CurrentDomain
-			   .GetAssemblies()
-			   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
-			   .SelectMany(assembly => assembly.GetTypes())
-			   .Where(type =>
-				{
-					return !type.IsAbstract
-					       && typeof(IObservable).IsAssignableFrom(type)
-					       && !typeof(UnityEngine.Object).IsAssignableFrom(type);
-				})
-			   .Select(type => new ValueDropdownItem<string>(type.Name.NicifyName(), type.AssemblyQualifiedName))
-			   .ToArray();
-
+		
+		private void OnSourceObservableChanged() => 
+			_sourcePropertyName = string.Empty;
+		
 		private IList<ValueDropdownItem<string>> GetAvailableSourcePropertyNames()
 		{
-			if (!TryGetSourceObservableType(out var sourceObservableType))
+			if (!_sourceBuilder.TryGetSourceObservableType(out var sourceObservableType))
 				return Array.Empty<ValueDropdownItem<string>>();
 
 			return IMP_GetAvailableSourcePropertyNames(sourceObservableType);
@@ -234,24 +254,14 @@ namespace KAG.Unity.Common.DataBindings
 			   .Where(property => property.DeclaringType == type)
 			   .Select(property => new ValueDropdownItem<string>(property.Name.NicifyName(), property.Name))
 			   .ToArray();
-
-		private void OnSourceModeChanged()
-		{
-			_sourceObservableAssemblyQualifiedTypeName = string.Empty;
-			_sourceObservableInstance = null;
-			
-			OnSourceObservableChanged();
-		}
-		private void OnSourceObservableChanged() => 
-			_sourcePropertyName = string.Empty;
-
+		
 		private bool HasValidSourcePropertyType() => 
 			TryGetSourcePropertyType(out _);
 		private bool TryGetSourcePropertyType(out Type type)
 		{
 			type = default;
 			
-			if (!TryGetSourceObservableType(out var sourceObservableType)
+			if (!_sourceBuilder.TryGetSourceObservableType(out var sourceObservableType)
 				|| string.IsNullOrEmpty(_sourcePropertyName))
 				return false;
 

@@ -1,6 +1,6 @@
 ﻿namespace KAG.Unity.Common.DataBindings
 {
-	public interface IDataBindingTarget
+	public interface IValueDataBindingTarget
 	{
 		void Set(object value);
 	}

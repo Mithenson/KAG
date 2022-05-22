@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace KAG.Unity.Common.DataBindings
 {
-	public sealed class ReflectedMethodDataBindingTarget<T> : IDataBindingTarget
+	public sealed class ReflectedMethodDataBindingTarget<T> : IValueDataBindingTarget
 	{
 		private Action<T> _method;
 
