@@ -13,7 +13,7 @@ namespace KAG.Unity.Common
 		public ViewModel() => 
 			_bindings = new List<IDataBinding>();
 
-		protected void AddBinding(ValueDataBinding dataBinding) => 
+		protected void AddBinding(IDataBinding dataBinding) => 
 			_bindings.Add(dataBinding);
 
 		void IDisposable.Dispose()
@@ -44,5 +44,7 @@ namespace KAG.Unity.Common
 		}
 		protected void AddParameterlessMethodBinding(string propertyName, string methodName) =>
 			AddBinding(propertyName, methodName.ToReflectedParameterlessMethodDataBindingTarget(this));
+		protected void AddListBinding<TSource, TTarget>(ObservableList<TSource> source, Func<TSource, TTarget> conversion, IList<TTarget> target) =>
+			AddBinding(new ListDataBinding<TSource, TTarget>(source, new LambdaDataBindingConverter<TSource, TTarget>(conversion), target));
 	}
 }

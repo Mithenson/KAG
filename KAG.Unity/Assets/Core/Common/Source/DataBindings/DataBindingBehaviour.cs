@@ -259,6 +259,15 @@ namespace KAG.Unity.Common.DataBindings
 			TryGetSourcePropertyType(out _);
 		private bool TryGetSourcePropertyType(out Type type)
 		{
+			if (_converters.Length > 0)
+			{
+				var lastConverter = _converters[_converters.Length - 1];
+				
+				type = lastConverter?.OutputType;
+				if (type != null)
+					return true;
+			}
+			
 			type = default;
 			
 			if (!_sourceBuilder.TryGetSourceObservableType(out var sourceObservableType)

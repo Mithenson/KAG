@@ -1,4 +1,6 @@
-﻿using KAG.Unity.Common;
+﻿using System;
+using System.Collections.Generic;
+using KAG.Unity.Common;
 using KAG.Unity.Common.DataBindings;
 using KAG.Unity.Common.Models;
 using Zenject;
@@ -55,7 +57,7 @@ namespace KAG.Unity.UI.ViewModels
 			AddMethodBinding(nameof(JoinMatchModel.Status), nameof(OnStatusChanged));
 			AddPropertyBinding(nameof(JoinMatchModel.Step), nameof(Step));
 		}
-		
+
 		private void OnStatusChanged(JoinMatchStatus status)
 		{
 			switch (status)

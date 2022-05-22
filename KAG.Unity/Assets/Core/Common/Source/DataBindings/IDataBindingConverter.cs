@@ -1,7 +1,10 @@
-﻿namespace KAG.Unity.Common.DataBindings
+﻿using System;
+
+namespace KAG.Unity.Common.DataBindings
 {
 	public interface IDataBindingConverter
 	{
+		Type OutputType { get; }
 		object Convert(object value);
 	}
 
