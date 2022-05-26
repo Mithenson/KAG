@@ -9,7 +9,7 @@ namespace KAG.Unity.Common.Observables
 
 		protected void ChangeProperty<T>(ref T from, T to, [CallerMemberName] string propertyName = null)
 		{
-			if (ObservableUtilities.TryChangeProperty(ref from, ref to, propertyName, out var args))
+			if (ObservableUtilities.TryChangeProperty(ref from, to, propertyName, out var args))
 				OnPropertyChanged?.Invoke(this, args);
 		}
 	}

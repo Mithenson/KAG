@@ -53,10 +53,10 @@ namespace KAG.Unity.Network
 		private NetworkError _error;
 		private NetworkSocket _socket;
 
-		public async Task<Match> GetMatch(string clientName, CancellationToken cancellationToken)
+		public async Task<Match> GetMatch(string playerId, CancellationToken cancellationToken)
 		{
 			_cancellationToken = cancellationToken;
-			LoginWithCustomID(clientName);
+			LoginWithCustomID(playerId);
 		
 			while (_socket == null)
 			{
@@ -78,11 +78,11 @@ namespace KAG.Unity.Network
 			return new Match(MatchKind.PlayFab, _socket);	
 		}
 
-		private void LoginWithCustomID(string clientName)
+		private void LoginWithCustomID(string playerId)
 		{
 			var request = new LoginWithCustomIDRequest()
 			{
-				CustomId = clientName,
+				CustomId = playerId,
 				CreateAccount = true
 			};
 

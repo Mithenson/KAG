@@ -27,12 +27,12 @@ namespace KAG.Unity.Network
 			_model = model;
 		}
 
-		public async Task Execute(string clientName, CancellationToken cancellationToken)
+		public async Task Execute(string playerId, CancellationToken cancellationToken)
 		{
 			_model.StartTimestamp = DateTime.UtcNow;
 			
 			_provider.OnProgress += OnProviderProgress;
-			var task = _provider.GetMatch(clientName, cancellationToken);
+			var task = _provider.GetMatch(playerId, cancellationToken);
 			
 			await task;
 			_provider.OnProgress -= OnProviderProgress;

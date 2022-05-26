@@ -16,18 +16,20 @@ namespace KAG.Unity.Network
 		private readonly DiContainer _container;
 		private readonly UnityClient _client;
 		private readonly World _world;
+		private readonly PlayerModel _playerModel;
 		
-		public NetworkManager(DiContainer container, UnityClient client, World world)
+		public NetworkManager(DiContainer container, /*UnityClient client, World world,*/ PlayerModel playerModel)
 		{
 			_container = container;
-			_client = client;
-			_world = world;
+			_client = null;
+			_world = null;
+			_playerModel = playerModel;
 		}
 
-		public async Task JoinMatch(string clientName, CancellationToken cancellationToken)
+		public async Task JoinMatch(CancellationToken cancellationToken)
 		{
 			var connectionHandler = _container.Resolve<JoinMatchHandler>();
-			var connectionTask = connectionHandler.Execute(clientName, cancellationToken);
+			var connectionTask = connectionHandler.Execute(_playerModel.Id, cancellationToken);
 
 			await connectionTask;
 
@@ -35,14 +37,14 @@ namespace KAG.Unity.Network
 				return;
 			
 			_client.MessageReceived += OnClientMessageReceived;
-			SendPlayerIdentificationMessage(clientName);
+			SendPlayerIdentificationMessage(_playerModel.Name);
 		}
-		private void SendPlayerIdentificationMessage(string clientName)
+		private void SendPlayerIdentificationMessage(string playerName)
 		{
 			using var writer = DarkRiftWriter.Create();
 			writer.Write(new PlayerIdentificationMessage()
 			{
-				Name = clientName
+				Name = playerName
 			});
 
 			using var message = Message.Create(NetworkTags.PlayerIdentification, writer);

@@ -1,4 +1,6 @@
+using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
+using KAG.Unity.UI.ViewModels;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Zenject;
@@ -38,7 +40,20 @@ namespace KAG.Unity.SceneManagement
         
         public override void InstallBindings()
         {
-
+            // Global
+            Container.BindInterfacesAndSelfTo<ApplicationModel>().AsSingle();
+            Container.BindInterfacesAndSelfTo<PlayerModel>().AsSingle();
+            
+            Container.BindInterfacesAndSelfTo<ApplicationViewModel>().AsSingle();
+            Container.BindInterfacesAndSelfTo<SettingsViewModel>().AsSingle();
+            
+            // Local
+            Container.BindInterfacesAndSelfTo<JoinMatchModel>().AsSingle();
+            
+            Container.BindInterfacesAndSelfTo<JoinMatchViewModel>().AsSingle();
+            
+            // Game
+            Container.BindInterfacesAndSelfTo<NetworkManager>().AsSingle();
         }
     }
 }

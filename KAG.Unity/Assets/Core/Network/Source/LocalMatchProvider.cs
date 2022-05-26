@@ -25,7 +25,7 @@ namespace KAG.Unity.Network
 		public void Inject([Inject(Id = InjectionKey.LocalServerProcess)]
 			TrackedProcess localServerProcess) => _localServerProcess = localServerProcess;
 
-		public Task<Match> GetMatch(string _, CancellationToken __)
+		public Task<Match> GetMatch(string playerId, CancellationToken __)
 		{
 			if (!_localServerProcess.Value.Responding)
 				return Task.FromException<Match>(new InvalidOperationException("The local server process is either not responding or has not been started."));

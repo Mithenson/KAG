@@ -4,7 +4,7 @@ namespace KAG.Unity.Common.Observables
 {
 	public static class ObservableUtilities 
 	{
-		public static bool TryChangeProperty<T>(ref T from, ref T to, string propertyName, out PropertyChangedEventArgs args)
+		public static bool TryChangeProperty<T>(ref T from, T to, string propertyName, out PropertyChangedEventArgs args)
 		{
 			if (Equals(from, to))
 			{

@@ -8,6 +8,6 @@ namespace KAG.Unity.Network
 	{
 		event Action<string> OnProgress;
 
-		Task<Match> GetMatch(string clientName, CancellationToken cancellationToken);
+		Task<Match> GetMatch(string playerId, CancellationToken cancellationToken);
 	}
 }

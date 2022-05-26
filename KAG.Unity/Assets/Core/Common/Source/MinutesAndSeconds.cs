@@ -20,13 +20,5 @@ namespace KAG.Unity.Common
 			Minutes = minutes;
 			Seconds = seconds;
 		}
-
-		public string Format()
-		{
-			var minutes = Minutes < 10 ? $"0{Minutes}" : Minutes.ToString();
-			var seconds = Seconds < 10 ? $"0{Seconds}" : Seconds.ToString();
-			
-			return $"{minutes}<space=0.1em><size=75%><sprite name=\"Icon_PictoIcon_TimeColon_Alt\"></size><space=0.125em>{seconds}m";
-		}
 	}
 }
