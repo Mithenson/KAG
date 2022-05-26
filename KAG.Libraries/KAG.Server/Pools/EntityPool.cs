@@ -16,8 +16,13 @@ namespace KAG.Server.Pools
 			_queue = new Queue<Entity>();
 		}
 
-		public Entity Acquire(ushort id) =>
-			_queue.Count == 0 ? _lifetimeScope.Resolve<Entity>(new PositionalParameter(0, id)) : _queue.Dequeue();
+		public Entity Acquire(ushort id)
+		{
+			var entity = _queue.Count == 0 ? _lifetimeScope.Resolve<Entity>() : _queue.Dequeue();
+			entity.Id = id;
+
+			return entity;
+		}
 
 		public void Return(Entity entity)
 		{

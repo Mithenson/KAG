@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DarkRift;
 
 namespace KAG.Shared
@@ -62,6 +63,13 @@ namespace KAG.Shared
 			reader.ReadSerializableInto(ref clone);
 
 			return clone;
+		}
+
+		public void Clear()
+		{
+			var entities = _entities.Values.ToArray();
+			for (var i = 0; i < entities.Length; i++)
+				Destroy(entities[i]);
 		}
 		
 		public void Destroy(Entity entity)

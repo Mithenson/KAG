@@ -2,14 +2,17 @@
     "name": "KAG.Unity.Gameplay",
     "rootNamespace": "KAG.Unity",
     "references": [
-        "GUID:16193552ed161e74c85619c17396da5c"
+        "GUID:16193552ed161e74c85619c17396da5c",
+        "GUID:d8a892de3fe47af4fb93e2e1ce3fd4cd",
+        "GUID:e540c3f453cfe71428b2ae5c8a89be18"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "KAG.Shared.dll"
+        "KAG.Shared.dll",
+        "Zenject-usage.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

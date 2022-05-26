@@ -10,11 +10,7 @@ namespace KAG.Unity.Network
 	[Serializable]
 	public sealed class LocalMatchProvider : IMatchProvider
 	{
-		public event Action<string> OnProgress
-		{
-			add { }
-			remove { }
-		} 
+		public event Action<string> OnProgress; 
 		
 		[SerializeField]
 		private NetworkSocket _socket;
@@ -22,15 +18,31 @@ namespace KAG.Unity.Network
 		private TrackedProcess _localServerProcess;
 
 		[Inject]
-		public void Inject([Inject(Id = InjectionKey.LocalServerProcess)]
-			TrackedProcess localServerProcess) => _localServerProcess = localServerProcess;
+		public void Inject([Inject(Id = InjectionKey.LocalServerProcess, Optional = true)] TrackedProcess localServerProcess) =>
+			_localServerProcess = localServerProcess;
 
-		public Task<Match> GetMatch(string playerId, CancellationToken __)
+		public async Task<Match> GetMatch(string playerId, CancellationToken cancellationToken)
 		{
-			if (!_localServerProcess.Value.Responding)
-				return Task.FromException<Match>(new InvalidOperationException("The local server process is either not responding or has not been started."));
-		
-			return Task.FromResult(new Match(MatchKind.Local, _socket));
+			OnProgress?.Invoke("Waiting");
+			await Task.Delay(1_250);
+			
+			if (cancellationToken.IsCancellationRequested)
+			{
+				await Task.FromCanceled<Match>(cancellationToken);
+				return null;
+			}
+
+			#if UNITY_EDITOR
+			
+			if (!_localServerProcess.IsRunning)
+			{
+				await Task.FromException<Match>(new InvalidOperationException("The local server process is either not responding or has not been started."));
+				return null;
+			}
+			
+			#endif
+
+			return new Match(MatchKind.Local, _socket);
 		}
 	}
 }

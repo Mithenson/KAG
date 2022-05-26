@@ -5,12 +5,13 @@ using DarkRift;
 using DarkRift.Client.Unity;
 using KAG.Shared.Extensions;
 using KAG.Unity.Common.Models;
+using UnityEngine;
 
 namespace KAG.Unity.Network
 {
 	public sealed class JoinMatchHandler
 	{
-		private const int PollingIntervalInMilliseconds = 1_000;
+		private const int PollingIntervalInMilliseconds = 500;
 		
 		private readonly UnityClient _client;
 		private readonly IMatchProvider _provider;
@@ -33,24 +34,39 @@ namespace KAG.Unity.Network
 			
 			_provider.OnProgress += OnProviderProgress;
 			var task = _provider.GetMatch(playerId, cancellationToken);
-			
-			await task;
-			_provider.OnProgress -= OnProviderProgress;
-			
-			if (task.IsFaulted)
+
+			try
 			{
-				await Task.FromException(task.Exception);
+				await task;
+			}
+			catch
+			{
+				if (task.IsCanceled)
+				{
+					await Task.FromCanceled(cancellationToken);
+					return;
+				}
 				
+				if (task.IsFaulted)
+				{
+					_model.Status = JoinMatchStatus.Faulted;
+					_model.Exception = task.Exception;
+					
+					await Task.FromException(task.Exception);
+					return;
+				}
+
 				_model.Status = JoinMatchStatus.Faulted;
+
+				var exception = new Exception("An unknown exception has occured.");
+				_model.Exception = exception;
+				
+				await Task.FromException(exception);
 				return;
 			}
-
-			if (task.IsCanceled)
+			finally
 			{
-				await Task.FromCanceled(cancellationToken);
-				
-				_model.Status = JoinMatchStatus.Faulted;
-				return;
+				_provider.OnProgress -= OnProviderProgress;
 			}
 			
 			_cancellationToken = cancellationToken;
@@ -67,17 +83,21 @@ namespace KAG.Unity.Network
 
 				if (cancellationToken.IsCancellationRequested)
 				{
-					await Task.FromCanceled(cancellationToken);
+					if (_client.ConnectionState == ConnectionState.Connected)
+						_client.Disconnect();
 					
-					_model.Status = JoinMatchStatus.Faulted;
+					await Task.FromCanceled(cancellationToken);
 					return;
 				}
 
 				if (_error != null)
 				{
-					await Task.FromException(new NetworkException(_error, "Failed to connect to the DarkRift server."));
+					if (_client.ConnectionState == ConnectionState.Connected)
+						_client.Disconnect();
 					
 					_model.Status = JoinMatchStatus.Faulted;
+					await Task.FromException(new NetworkException(_error, "Failed to connect to the DarkRift server."));
+					
 					return;
 				}
 			}

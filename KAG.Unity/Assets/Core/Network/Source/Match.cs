@@ -1,4 +1,6 @@
-﻿namespace KAG.Unity.Network
+﻿using System.Collections.Generic;
+
+namespace KAG.Unity.Network
 {
 	public sealed class Match
 	{

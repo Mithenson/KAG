@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using DarkRift.Client.Unity;
+using KAG.Shared;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -33,7 +36,18 @@ namespace KAG.Unity.Common.Models
 		}
 		private GameStatus _gameStatus;
 
-		public async void GoInGame()
+		private JoinMatchModel _joinMatchModel;
+		private UnityClient _client;
+		private World _world;
+		
+		public ApplicationModel(JoinMatchModel joinMatchModel, UnityClient client, World world)
+		{
+			_joinMatchModel = joinMatchModel;
+			_client = client;
+			_world = world;
+		}
+
+		public async Task GoInGame()
 		{
 			var operation = SceneManager.LoadSceneAsync(GameSceneIndex, LoadSceneMode.Additive);
 			await WaitForLoadOperation(operation);
@@ -41,8 +55,12 @@ namespace KAG.Unity.Common.Models
 			GameStatus = GameStatus.InGame;
 		}
 
-		public async void GoBackToLobby()
+		public async Task GoBackToLobby()
 		{
+			_client.Disconnect();
+			_world.Clear();
+			_joinMatchModel.Status = JoinMatchStatus.Idle;
+
 			var operation = SceneManager.UnloadSceneAsync(GameSceneIndex);
 			await WaitForLoadOperation(operation);
 
@@ -66,6 +84,7 @@ namespace KAG.Unity.Common.Models
 			await Task.Delay(DelayAfterLoadingEndInMilliseconds);
 
 			IsLoading = false;
+			await Task.CompletedTask;
 		}
 
 		public void Quit() => 

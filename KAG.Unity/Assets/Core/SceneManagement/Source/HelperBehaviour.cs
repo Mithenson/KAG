@@ -1,4 +1,5 @@
 ﻿using KAG.Unity.Common.Models;
+using KAG.Unity.Network;
 using KAG.Unity.UI.ViewModels;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -10,12 +11,14 @@ namespace KAG.Unity.SceneManagement
 	{
 		private JoinMatchViewModel _joinMatchViewModel;
 		private ApplicationModel _applicationModel;
+		private NetworkManager _networkManager;
 
 		[Inject]
-		public void Inject(JoinMatchViewModel joinMatchViewModel, ApplicationModel applicationModel)
+		public void Inject(JoinMatchViewModel joinMatchViewModel, ApplicationModel applicationModel, NetworkManager networkManager)
 		{
 			_joinMatchViewModel = joinMatchViewModel;
 			_applicationModel = applicationModel;
+			_networkManager = networkManager;
 		}
 
 		[Button]
@@ -32,6 +35,6 @@ namespace KAG.Unity.SceneManagement
 		
 		[Button]
 		public void GoBackToLobby() => 
-			_applicationModel.GoBackToLobby();
+			_networkManager.LeaveMatch();
 	}
 }

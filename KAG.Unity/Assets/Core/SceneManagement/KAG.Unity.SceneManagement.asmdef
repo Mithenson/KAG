@@ -6,7 +6,8 @@
         "GUID:d8a892de3fe47af4fb93e2e1ce3fd4cd",
         "GUID:ab3b9978d385e5141a6151d7252ec7ec",
         "GUID:16193552ed161e74c85619c17396da5c",
-        "GUID:3ae28362d6d812b4dae965375f355cbc"
+        "GUID:3ae28362d6d812b4dae965375f355cbc",
+        "GUID:e540c3f453cfe71428b2ae5c8a89be18"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -14,7 +15,8 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "Zenject-usage.dll",
-        "Sirenix.OdinInspector.Attributes.dll"
+        "Sirenix.OdinInspector.Attributes.dll",
+        "KAG.Shared.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

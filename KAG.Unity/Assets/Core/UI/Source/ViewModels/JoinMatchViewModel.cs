@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using KAG.Unity.Common;
-using KAG.Unity.Common.DataBindings;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using UnityEngine;
@@ -12,7 +10,7 @@ namespace KAG.Unity.UI.ViewModels
 {
 	public class JoinMatchViewModel : ViewModel, ITickable
 	{
-		private const int _timeOutDelayInMilliseconds = 9000;
+		private const int _timeOutDelayInMilliseconds = 30_0000;
 		
 		public bool PlayerNameIsNotEmpty
 		{
@@ -69,6 +67,13 @@ namespace KAG.Unity.UI.ViewModels
 		}
 		private bool _isFaulted;
 
+		public string Error
+		{
+			get => _error;
+			set => ChangeProperty(ref _error, value);
+		}
+		private string _error;
+
 		public bool IsCompleted
 		{
 			get => _isCompleted;
@@ -80,19 +85,18 @@ namespace KAG.Unity.UI.ViewModels
 		private readonly JoinMatchModel _model;
 		private readonly NetworkManager _networkManager;
 
-		private CancellationTokenSource _joinMatchCancellationToken;
+		private CancellationTokenSource _joinMatchCancellation;
 		
 		public JoinMatchViewModel(PlayerModel playerModel, JoinMatchModel model, NetworkManager networkManager)
 		{
 			_playerModel = playerModel;
 			_model = model;
 			_networkManager = networkManager;
-
+			
 			AddMethodBinding(playerModel, nameof(PlayerModel.Name), nameof(OnPlayerNameChanged));
 			AddMethodBinding(model, nameof(JoinMatchModel.Status), nameof(OnStatusChanged));
 			AddPropertyBinding(model, nameof(JoinMatchModel.Step), nameof(Step));
-
-			_joinMatchCancellationToken = new CancellationTokenSource(_timeOutDelayInMilliseconds);
+			AddMethodBinding(model, nameof(JoinMatchModel.Exception), nameof(OnExceptionCaught));
 		}
 
 		public void OnPlayerNameChanged(string playerName)
@@ -111,10 +115,14 @@ namespace KAG.Unity.UI.ViewModels
 			{
 				case JoinMatchStatus.Idle:
 					HasBeenStarted = false;
+					IsFaulted = false;
+					IsCompleted = false;
 					break;
 
 				case JoinMatchStatus.GettingMatch:
 					HasBeenStarted = true;
+					IsFaulted = false;
+					IsCompleted = false;
 					TimeSinceStart = MinutesAndSeconds.Zero;
 					break;
 
@@ -123,6 +131,7 @@ namespace KAG.Unity.UI.ViewModels
 					break;
 
 				case JoinMatchStatus.Faulted:
+					HasBeenStarted = false;
 					IsFaulted = true;
 					break;
 
@@ -132,12 +141,49 @@ namespace KAG.Unity.UI.ViewModels
 			}
 		}
 
-		public void JoinMatchOrCancel()
+		public void OnExceptionCaught(Exception exception)
+		{
+			if (exception == null)
+				return;
+			
+			string error;
+			if (exception is NetworkException networkException)
+				error = networkException.Error.Message;
+			else if (exception.InnerException is NetworkException innerNetworkException)
+				error = innerNetworkException.Error.Message;
+			else
+				error = "An unknown issue occured.";
+
+			if (error.Length > 26)
+				error = error.Remove(26).Insert(26, "...");
+
+			Error = error;
+		}
+
+		public async void JoinMatchOrCancel()
 		{
 			if (!HasBeenStarted)
-				_model.StartTimestamp = DateTime.UtcNow;
+			{
+				_joinMatchCancellation = new CancellationTokenSource(_timeOutDelayInMilliseconds);
+				var task = _networkManager.JoinMatch(_joinMatchCancellation.Token);
+				
+				try
+				{
+					await task;
+				}
+				catch
+				{
+					if (task.IsCanceled)
+						return;
+
+					throw;
+				}
+			}
 			else
+			{
+				_joinMatchCancellation.Cancel();
 				_model.Status = JoinMatchStatus.Idle;
+			}
 		}
 
 		void ITickable.Tick()

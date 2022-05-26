@@ -7,6 +7,7 @@ using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Shared.Network;
 using KAG.Unity.Common.Models;
+using UnityEngine;
 using Zenject;
 
 namespace KAG.Unity.Network
@@ -16,14 +17,24 @@ namespace KAG.Unity.Network
 		private readonly DiContainer _container;
 		private readonly UnityClient _client;
 		private readonly World _world;
+		private readonly ApplicationModel _applicationModel;
 		private readonly PlayerModel _playerModel;
+		private readonly JoinMatchModel _joinMatchModel;
 		
-		public NetworkManager(DiContainer container, /*UnityClient client, World world,*/ PlayerModel playerModel)
+		public NetworkManager(
+			DiContainer container, 
+			UnityClient client, 
+			World world,
+			ApplicationModel applicationModel, 
+			PlayerModel playerModel,
+			JoinMatchModel joinMatchModel)
 		{
 			_container = container;
-			_client = null;
-			_world = null;
+			_client = client;
+			_world = world;
+			_applicationModel = applicationModel;
 			_playerModel = playerModel;
+			_joinMatchModel = joinMatchModel;
 		}
 
 		public async Task JoinMatch(CancellationToken cancellationToken)
@@ -31,13 +42,37 @@ namespace KAG.Unity.Network
 			var connectionHandler = _container.Resolve<JoinMatchHandler>();
 			var connectionTask = connectionHandler.Execute(_playerModel.Id, cancellationToken);
 
-			await connectionTask;
+			try
+			{
+				await connectionTask;
+			}
+			catch
+			{
+				if (connectionTask.IsCanceled)
+				{
+					await Task.FromCanceled(cancellationToken);
+					return;
+				}
+				
+				if (connectionTask.IsFaulted)
+				{
+					await Task.FromException(connectionTask.Exception);
+					return;
+				}
+
+				await Task.FromException(new Exception("An unknown exception has occured."));
+				return;
+			}
 
 			if (!connectionTask.IsCompleted)
 				return;
+
+			await _applicationModel.GoInGame();
 			
 			_client.MessageReceived += OnClientMessageReceived;
 			SendPlayerIdentificationMessage(_playerModel.Name);
+
+			await Task.CompletedTask;
 		}
 		private void SendPlayerIdentificationMessage(string playerName)
 		{
@@ -49,6 +84,17 @@ namespace KAG.Unity.Network
 
 			using var message = Message.Create(NetworkTags.PlayerIdentification, writer);
 			_client.SendMessage(message, SendMode.Reliable);
+		}
+
+		public void LeaveMatch()
+		{
+			_client.MessageReceived -= OnClientMessageReceived;
+			_client.Disconnect();
+			
+			_world.Clear();
+			_joinMatchModel.Status = JoinMatchStatus.Idle;
+
+			_applicationModel.GoBackToLobby();
 		}
 
 		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
@@ -74,7 +120,7 @@ namespace KAG.Unity.Network
 				CreateEntityFromReader(reader);
 		}
 
-		private void OnPlayerArrival(DarkRiftReader reader) => 
+		private void OnPlayerArrival(DarkRiftReader reader) =>
 			CreateEntityFromReader(reader);
 
 		private void CreateEntityFromReader(DarkRiftReader reader)

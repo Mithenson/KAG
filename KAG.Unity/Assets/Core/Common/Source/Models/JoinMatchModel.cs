@@ -30,5 +30,12 @@ namespace KAG.Unity.Common.Models
 			set => ChangeProperty(ref _step, value);
 		}
 		private string _step;
+
+		public Exception Exception
+		{
+			get => _exception;
+			set => ChangeProperty(ref _exception, value);
+		}
+		private Exception _exception;
 	}
 }

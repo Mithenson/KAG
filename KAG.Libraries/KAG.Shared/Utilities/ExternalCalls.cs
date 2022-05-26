@@ -8,6 +8,7 @@ namespace KAG.Shared.Utilities
 		{
 			var process = new Process
 			{
+				
 				StartInfo =
 				{
 					WorkingDirectory = workingDirectory,

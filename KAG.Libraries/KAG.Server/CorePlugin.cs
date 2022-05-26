@@ -38,6 +38,11 @@ namespace KAG.Server
 			
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
+
+			var entity = _world.CreateEntity();
+			entity.AddComponent<PositionComponent>();
+			
+			_world.Clear();
 		}
 
 		private IMultiplayerSDKProxy CreateMultiplayerSDKProxy()
@@ -108,8 +113,12 @@ namespace KAG.Server
 							
 			// Create player
 			var playerEntity = _world.CreateEntity();
+			var component = playerEntity.AddComponent<PlayerComponent>();
 			var position = playerEntity.AddComponent<PositionComponent>();
 
+			component.Id = client.ID;
+			component.Name = identificationMessage.Name;
+			
 			var random = new Random();
 			position.Value = new Vector2(random.Next(-20, 20), random.Next(-20, 20));
 

@@ -4,6 +4,7 @@ namespace KAG.Unity.Network
 {
 	public sealed class NetworkException : Exception
 	{
+		public NetworkError Error => _error;
 		public override string Message => $"{base.Message}\nError={_error.Message}";
 
 		private NetworkError _error;

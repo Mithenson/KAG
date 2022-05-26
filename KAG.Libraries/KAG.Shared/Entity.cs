@@ -8,7 +8,7 @@ namespace KAG.Shared
 {
 	public sealed class Entity : IEquatable<Entity>, IDarkRiftSerializable
 	{
-		public readonly ushort Id;
+		public ushort Id;
 
 		internal World World => _world;
 		internal ComponentTypeRepository ComponentTypeRepository => _componentTypeRepository;
@@ -19,10 +19,8 @@ namespace KAG.Shared
 		
 		private Dictionary<Type, Component> _components;
 		
-		public Entity(ushort id, World world, ComponentTypeRepository componentTypeRepository, IComponentPool componentPool)
+		public Entity(World world, ComponentTypeRepository componentTypeRepository, IComponentPool componentPool)
 		{
-			Id = id;
-
 			_world = world;
 			_componentTypeRepository = componentTypeRepository;
 			_componentPool = componentPool;
@@ -278,7 +276,9 @@ namespace KAG.Shared
 		public int RemoveAllComponents()
 		{
 			var removalCount = _components.Count;
-			foreach (var kvp in _components)
+
+			var kvps = _components.ToArray();
+			foreach (var kvp in kvps)
 				IMP_DIRECT_RemoveComponent(kvp.Key, kvp.Value);
 				
 			return removalCount;

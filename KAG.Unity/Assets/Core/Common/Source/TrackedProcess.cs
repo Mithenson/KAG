@@ -1,13 +1,32 @@
 ﻿using System;
 using System.Diagnostics;
 using KAG.Shared.Utilities;
+using Sirenix.OdinInspector;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace KAG.Unity.Common
 {
 	[Serializable]
 	public abstract class TrackedProcess
 	{
+		public bool IsRunning 
+		{
+			get
+			{
+				try
+				{
+					if (!_value.HasExited)
+						return true;
+				}
+				catch
+				{
+					return false;
+				}
+
+				return false;
+			}
+		}
 		public Process Value => _value;
 	
 		protected abstract string WorkingDirectory { get; }
@@ -19,15 +38,14 @@ namespace KAG.Unity.Common
 		private bool _showWindow;
 	
 		private Process _value;
-
-		public TrackedProcess() =>
-			_value = ExternalCalls.CreateProcess(WorkingDirectory, FileName, _showWindow, Arguments, UseShellExecute);
-
+		
 		public virtual bool Start()
 		{
-			if (_value.Responding)
+			_value ??= ExternalCalls.CreateProcess(WorkingDirectory, FileName, _showWindow, Arguments, UseShellExecute);
+
+			if (IsRunning)
 				return false;
-		
+			
 			_value.Start();
 			Application.quitting += OnApplicationQuit;
 			
@@ -36,7 +54,7 @@ namespace KAG.Unity.Common
 
 		public virtual bool Kill()
 		{
-			if (_value.HasExited)
+			if (!IsRunning)
 				return false;
 		
 			_value.Kill();
