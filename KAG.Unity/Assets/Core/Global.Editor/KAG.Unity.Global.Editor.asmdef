@@ -1,0 +1,27 @@
+{
+    "name": "KAG.Unity.Global.Editor",
+    "rootNamespace": "KAG.Unity",
+    "references": [
+        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4",
+        "GUID:ab3b9978d385e5141a6151d7252ec7ec",
+        "GUID:16193552ed161e74c85619c17396da5c",
+        "GUID:3ae28362d6d812b4dae965375f355cbc",
+        "GUID:bcbc1d7f4f214304aaa622676434742c",
+        "GUID:0da6d172d18a54e4389d0dce1e1ffdf2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "DarkRift.Client.dll",
+        "DarkRift.dll",
+        "KAG.Shared.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

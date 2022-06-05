@@ -1,211 +1,179 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autofac;
 using DarkRift;
 using DarkRift.Server;
+using KAG.Server.Pools;
 using KAG.Shared;
-using Microsoft.Playfab.Gaming.GSDK.CSharp;
+using KAG.Shared.Network;
+using KAG.Shared.Transform;
 
 namespace KAG.Server
 {
-	public class CorePlugin : Plugin
+	public sealed class CorePlugin : Plugin
 	{
+		private const int MaxPlayers = 12;
+		
 		public override Version Version => new Version(1, 0, 0);
 		public override bool ThreadSafe => false;
 
-		private Dictionary<IClient, (Player Value, PlayerState State)> _connectedPlayers;
-		private DateTime _startDateTime;
-		private bool _sessionIdAssigned;
-
-		private bool _hookedToPlayfab;
-
-		public CorePlugin(PluginLoadData loadData) : base(loadData)
+		private readonly HashSet<IClient> _clientsOnStandby;
+		private readonly Dictionary<IClient, Player> _connectedPlayers;
+		private readonly IMultiplayerSDKProxy _multiplayerSdkProxy;
+		private readonly IContainer _container;
+		private readonly ILifetimeScope _lifetimeScope;
+		private readonly World _world;
+		
+		public CorePlugin(PluginLoadData pluginLoadData) : base(pluginLoadData)
 		{
-			_sessionIdAssigned = false;
+			_clientsOnStandby = new HashSet<IClient>();
+			_connectedPlayers = new Dictionary<IClient, Player>();
+
+			_multiplayerSdkProxy = CreateMultiplayerSDKProxy();
 			
-			_connectedPlayers = new Dictionary<IClient, (Player Value, PlayerState State)>();
+			_container = CreateDependencyInjectionContainer();
+			_lifetimeScope = _container.BeginLifetimeScope();
+			_world = _lifetimeScope.Resolve<World>();
+			
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
 
+			var entity = _world.CreateEntity();
+			entity.AddComponent<PositionComponent>();
+			
+			_world.Clear();
+		}
+
+		private IMultiplayerSDKProxy CreateMultiplayerSDKProxy()
+		{
+			IMultiplayerSDKProxy instance;
+
 			try
 			{
-				GameserverSDK.RegisterHealthCallback(OnHealthCheck);
-				GameserverSDK.RegisterShutdownCallback(OnShutDown);
+				instance = new PlayfabMultiplayerSDKProxy();
+			}
+			catch
+			{
+				Logger.Log("Playfab multiplayer sdk is unavailable. Switching to mockup.", LogType.Info);
+				instance = new MockupMultiplayerSDKProxy();
+			}
 
-				GameserverSDK.Start();
-				GameserverSDK.ReadyForPlayers();
+			return instance;
+		}
 
-				_hookedToPlayfab = true;
+		private IContainer CreateDependencyInjectionContainer()
+		{
+			var builder = new ContainerBuilder();
+
+			try
+			{
+				var componentTypeRepository = new ComponentTypeRepository();
+				builder.RegisterInstance(componentTypeRepository).SingleInstance();
+
+				builder.RegisterType<World>().AsSelf().SingleInstance();
+
+				builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
+				builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
+
+				builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
+
+				foreach (var componentType in componentTypeRepository.ComponentTypes)
+					builder.RegisterType(componentType).AsSelf().InstancePerDependency();
 			}
 			catch (Exception exception)
 			{
-				Logger.Log("Could not hook up to playfab.", LogType.Warning, exception);
-				_hookedToPlayfab = false;
-			}
-		}
-
-		private bool OnHealthCheck()
-		{
-			if (!_sessionIdAssigned)
-			{
-				var config = GameserverSDK.getConfigSettings();
-				if (config.TryGetValue(GameserverSDK.ServerIdKey, out _))
-				{
-					_startDateTime = DateTime.Now;
-					_sessionIdAssigned = true;
-				}
-
-				return true;
-			}
-			
-			var awakeTime = (float)(DateTime.Now - _startDateTime).TotalSeconds;
-			if (awakeTime > 600.0f && _connectedPlayers.Count <= 0)
-			{
-				OnShutDown();
-				return false;
+				Logger.Log("An unexpected exception occured during registration of dependencies.", LogType.Error, exception);
 			}
 
-			return true;
-		}
-
-		private void UpdatePlayfabPlayers()
-		{
-			var players = new List<ConnectedPlayer>();
-			foreach (var connectedPlayer in _connectedPlayers.Values)
-				players.Add(new ConnectedPlayer(connectedPlayer.Value.PlayerName));
-			
-			if (_hookedToPlayfab)
-				GameserverSDK.UpdateConnectedPlayers(players);
+			return builder.Build();
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
 		{
-			var player = new Player(args.Client.ID, "John Doe");
-			_connectedPlayers.Add(args.Client, (player, PlayerState.Default));
-
-			using (var newPlayerWriter = DarkRiftWriter.Create())
-			{
-				newPlayerWriter.Write(player);
-				using (var message = Message.Create(Tags.PlayerConnection, newPlayerWriter))
-				{
-					foreach (var client in ClientManager.GetAllClients().Where(candidate => candidate != args.Client))
-						client.SendMessage(message, SendMode.Reliable);
-				}
-			}
-
-			foreach (var alreadyConnectedPlayer in _connectedPlayers.Values)
-			{
-				using (var existingPlayerWriter = DarkRiftWriter.Create())
-				{
-					existingPlayerWriter.Write(alreadyConnectedPlayer.Value);
-					existingPlayerWriter.Write(alreadyConnectedPlayer.State.X);
-					existingPlayerWriter.Write(alreadyConnectedPlayer.State.Y);
-					
-					using (var message = Message.Create(Tags.PlayerConnection, existingPlayerWriter))
-						args.Client.SendMessage(message, SendMode.Reliable);
-				}
-			}
-			
+			_clientsOnStandby.Add(args.Client);
 			args.Client.MessageReceived += OnClientMessageReceived;
-			UpdatePlayfabPlayers();
 		}
 
 		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
 		{
-			using (var message = args.GetMessage())
+			using var message = args.GetMessage();
+			switch (message.Tag)
 			{
-				switch (message.Tag)
-				{
-					case Tags.PlayerDataUpdate:
-						OnPlayerDataUpdated(args.Client, message);
-						break;
-					
-					case Tags.PlayerReady:
-						OnPlayerReady(args.Client, message);
-						break;
-					
-					case Tags.PlayerMove:
-						OnPlayerMoved(args.Client, message);
-						break;
-				}
+				case NetworkTags.PlayerIdentification:
+					OnPlayerIdentification(args.Client, message);
+					break;
 			}
 		}
 
-		private void OnPlayerDataUpdated(IClient sender, Message message)
+		private void OnPlayerIdentification(IClient client, Message message)
 		{
-			using (var reader = message.GetReader())
-			{
-				var tuple = _connectedPlayers[sender];
-				
-				var updatedPlayerData = reader.ReadSerializable<Player>();
-				tuple.Value = updatedPlayerData;
+			using var reader = message.GetReader();
+			var identificationMessage = reader.ReadSerializable<PlayerIdentificationMessage>();
+							
+			// Create player
+			var playerEntity = _world.CreateEntity();
+			var component = playerEntity.AddComponent<PlayerComponent>();
+			var position = playerEntity.AddComponent<PositionComponent>();
 
-				tuple.State.X = reader.ReadSingle();
-				tuple.State.Y = reader.ReadSingle();
-				
-				_connectedPlayers[sender] = tuple;
+			component.Id = client.ID;
+			component.Name = identificationMessage.Name;
+			
+			var random = new Random();
+			position.Value = new Vector2(random.Next(-20, 20), random.Next(-20, 20));
 
-				foreach (var client in ClientManager.GetAllClients())
-					client.SendMessage(message, SendMode.Reliable);
-			}
+			var player = new Player(client, identificationMessage.Name, playerEntity);
+			_connectedPlayers.Add(client, player);
+
+			SendPlayerArrivalMessage(player);
+			SendPlayerCatchupMessage(player);
+			
+			_multiplayerSdkProxy.UpdateConnectedPlayers(_connectedPlayers.Values);
 		}
-
-		private void OnPlayerReady(IClient sender, Message message)
+		private void SendPlayerCatchupMessage(Player player)
 		{
-			using (var reader = message.GetReader())
-			{
-				var data = reader.ReadSerializable<PlayerReady>();
-				
-				var tuple = _connectedPlayers[sender];
-				tuple.State.IsReady = data.Value;
-				_connectedPlayers[sender] = tuple;
-			}
+			using var writer = DarkRiftWriter.Create();
+			foreach (var entity in _world.Entities)
+				writer.Write(entity);
 
-			if (!_connectedPlayers.Values.All(player => player.State.IsReady))
-				return;
-
-			using (var writer = DarkRiftWriter.Create())
-			{
-				using (var gameStartMessage = Message.Create(Tags.GameStart, writer))
-				{
-					foreach (var client in ClientManager.GetAllClients())
-						client.SendMessage(gameStartMessage, SendMode.Reliable);
-				}
-			}
+			using var message = Message.Create(NetworkTags.PlayerCatchup, writer);
+			player.Client.SendMessage(message, SendMode.Reliable);
 		}
-
-		private void OnPlayerMoved(IClient sender, Message message)
+		private void SendPlayerArrivalMessage(Player joiningPlayer)
 		{
-			using (var reader = message.GetReader())
-			{
-				var tuple = _connectedPlayers[sender];
-				tuple.State.X = reader.ReadSingle();
-				tuple.State.Y = reader.ReadSingle();
-				_connectedPlayers[sender] = tuple;
-				
-				foreach (var client in ClientManager.GetAllClients())
-					client.SendMessage(message, SendMode.Unreliable);
-			}
+			using var writer = DarkRiftWriter.Create();
+			writer.Write(joiningPlayer.Entity);
+
+			using var message = Message.Create(NetworkTags.PlayerArrival, writer);
+			foreach (var client in ClientManager.GetAllClients().Where(client => client != joiningPlayer.Client))
+				client.SendMessage(message, SendMode.Reliable);
 		}
 
 		private void OnClientDisconnected(object sender, ClientDisconnectedEventArgs args)
 		{
-			_connectedPlayers.Remove(args.Client);
-
-			using (var writer = DarkRiftWriter.Create())
-			{
-				writer.Write(args.Client.ID);
-				using (var message = Message.Create(Tags.PlayerDisconnection, writer))
-				{
-					foreach (var client in ClientManager.GetAllClients())
-						client.SendMessage(message, SendMode.Reliable);
-				}
-			}
+			if (!_connectedPlayers.TryGetValue(args.Client, out var player))
+				return;
 			
-			UpdatePlayfabPlayers();
-		}
+			_world.Destroy(player.Entity);
 
-		private void OnShutDown() => 
-			Environment.Exit(1);
+			using var writer = DarkRiftWriter.Create();
+			writer.Write(new PlayerDepartureMessage()
+			{
+				Id = args.Client.ID
+			});
+
+			using var message = Message.Create(NetworkTags.PlayerDeparture, writer);
+			foreach (var client in ClientManager.GetAllClients())
+				client.SendMessage(message, SendMode.Reliable);
+
+			_connectedPlayers.Remove(args.Client);
+			_multiplayerSdkProxy.UpdateConnectedPlayers(_connectedPlayers.Values);
+		}
+		
+		protected override void Dispose(bool disposing)
+		{
+			_lifetimeScope.Dispose();
+			base.Dispose(disposing);
+		}
 	}
 }

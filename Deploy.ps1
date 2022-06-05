@@ -1,6 +1,8 @@
+$secretKey = Get-Content -Path "$($env:APPDATA)\KAG\SecretKey.txt"
+
 echo "Connecting to playfab multiplayer API..."
 try{
-	Set-PfTitle -TitleID "B76E5" -SecretKey "4A58IERIMM8XEG5DXRK7FAQZ4XRBAYNJ69TIQA6NIBDTKDAPB1"
+	Set-PfTitle -TitleID "B76E5" -SecretKey $secretKey
 	Enable-PfMultiplayerServer
 }
 catch{
@@ -70,7 +72,7 @@ echo "`n"
 echo "Authenticating to playfab rest API..."
 try{
 	$headers = @{
-		"X-SecretKey"="4A58IERIMM8XEG5DXRK7FAQZ4XRBAYNJ69TIQA6NIBDTKDAPB1"
+		"X-SecretKey"=$secretKey
 	}
 	
 	$authenticationResponse = Invoke-RestMethod -Method "Post" -Uri "https://B76E5.playfabapi.com/Authentication/GetEntityToken" -Headers $headers -ContentType "application/json"
