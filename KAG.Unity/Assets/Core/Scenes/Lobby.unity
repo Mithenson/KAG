@@ -3972,6 +3972,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f9e5e8cc1b082a4caa7a07d8919ed32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _test: {fileID: 102900000, guid: 4b45e051e9bb9444895907271b732f51, type: 3}
   _mode: 0
   _localServerNetworkProvider:
     _socket:
@@ -8267,7 +8268,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 960, y: 2207.2993, z: 0}
+    m_Scale: {x: 959.99994, y: 855.4455, z: 0}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0

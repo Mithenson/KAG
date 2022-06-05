@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using DarkRift.Client.Unity;
 using KAG.Shared;
+using KAG.Shared.Json;
 using KAG.Shared.Prototype;
 using KAG.Unity.Network;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UnityEngine;
 using Zenject;
 using Component = KAG.Shared.Component;
@@ -24,10 +30,10 @@ namespace KAG.Unity.SceneManagement
 		}
 
 		#endregion
-        
+		
 		public override void InstallBindings()
 		{
-			Container.BindInterfacesAndSelfTo<PrototypeRepository>().AsSingle().WithArguments(new string[] { Application.persistentDataPath });
+			InstallPrototypeRepository();
 			
 			Container.BindMemoryPool<Entity, MemoryPool<Entity>>();
 			Container.BindInterfacesAndSelfTo<EntityPool>().AsSingle();
@@ -45,6 +51,40 @@ namespace KAG.Unity.SceneManagement
 			Container.BindInterfacesAndSelfTo<ComponentPool>().AsSingle();
 
 			Container.BindInterfacesAndSelfTo<World>().AsSingle();
+		}
+
+		private void InstallPrototypeRepository()
+		{
+			var prototypeDefinitionsBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "prototype_definitions"));
+
+			var serializerSettings = new JsonSerializerSettings()
+			{
+				Formatting = Formatting.Indented,
+				TypeNameHandling = TypeNameHandling.Auto,
+				ContractResolver = (IContractResolver) new CustomContractResolver(),
+				Converters = (IList<JsonConverter>) new List<JsonConverter>()
+				{
+					(JsonConverter) new IdentityConverter()
+				}
+			};
+			
+			try
+			{
+				var prototypeDefinitions = prototypeDefinitionsBundle.LoadAllAssets<TextAsset>();
+				var prototypes = new List<Prototype>(prototypeDefinitions.Length);
+
+				for (var i = 0; i < prototypeDefinitions.Length; i++)
+				{
+					var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinitions[i].text, JsonUtilities.StandardSerializerSettings);
+					prototypes.Add(prototype);
+				}
+
+				Container.BindInterfacesAndSelfTo<PrototypeRepository>().AsSingle().WithArguments((IEnumerable<Prototype>)prototypes);
+			}
+			finally
+			{
+				prototypeDefinitionsBundle.Unload(true);
+			}
 		}
 	}
 }

@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 1488392443
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: prototype_definitions
+      Dependencies: {}

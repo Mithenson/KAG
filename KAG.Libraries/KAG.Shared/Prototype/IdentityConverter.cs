@@ -4,14 +4,15 @@ using Newtonsoft.Json;
 
 namespace KAG.Shared.Prototype
 {
-	public sealed class IdentityConverter : JsonConverter<Identity>
+	public sealed class IdentityConverter : JsonConverter
 	{
-		public override void WriteJson(JsonWriter writer, Identity value, JsonSerializer serializer)
-		{
-			writer.WriteValue(value.ToString());
-		}
+		public override bool CanConvert(Type objectType) => 
+			objectType == typeof(Identity);
 
-		public override Identity ReadJson(JsonReader reader, Type objectType, Identity existingValue, bool hasExistingValue, JsonSerializer serializer)
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
+			writer.WriteValue(value.ToString());
+
+		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) 
 		{
 			if (!(reader.Value is string input))
 				throw new InvalidConstraintException(

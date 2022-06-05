@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autofac;
 using DarkRift;
 using DarkRift.Server;
 using KAG.Server.Pools;
 using KAG.Shared;
-using KAG.Shared.JSON;
+using KAG.Shared.Json;
 using KAG.Shared.Network;
 using KAG.Shared.Prototype;
 using KAG.Shared.Transform;
@@ -34,8 +35,10 @@ namespace KAG.Server
 			_connectedPlayers = new Dictionary<IClient, Player>();
 
 			_multiplayerSdkProxy = CreateMultiplayerSDKProxy();
+
+			if (!TryCreateDependencyInjectionContainer(out _container))
+				return;
 			
-			_container = CreateDependencyInjectionContainer();
 			_lifetimeScope = _container.BeginLifetimeScope();
 			_world = _lifetimeScope.Resolve<World>();
 			
@@ -60,44 +63,29 @@ namespace KAG.Server
 			return instance;
 		}
 
-		private IContainer CreateDependencyInjectionContainer()
+		private bool TryCreateDependencyInjectionContainer(out IContainer container)
 		{
 			var builder = new ContainerBuilder();
 
 			try
 			{
-				RegisterJSONDependencies(builder);
 				RegisterSimulationDependencies(builder);
 			}
 			catch (Exception exception)
 			{
 				Logger.Log("An unexpected exception occured during the registration of dependencies.", LogType.Error, exception);
+
+				container = default;
+				return false;
 			}
 
-			return builder.Build();
+			container = builder.Build();
+			return true;
 		}
-
-		private void RegisterJSONDependencies(ContainerBuilder builder)
-		{
-			var settings = new JsonSerializerSettings()
-			{
-				Formatting = Formatting.Indented,
-				TypeNameHandling = TypeNameHandling.Auto,
-				ContractResolver = new CustomContractResolver(),
-				Converters = new List<JsonConverter>()
-				{
-					new IdentityConverter()
-				}
-			};
-			
-			builder.RegisterInstance(settings).SingleInstance();
-		}
+		
 		private void RegisterSimulationDependencies(ContainerBuilder builder)
 		{
-			builder.RegisterType<PrototypeRepository>()
-			   .WithParameter(new PositionalParameter(0, new string[] { ResourceDirectory }))
-			   .AsSelf()
-			   .SingleInstance();
+			RegisterPrototypeRepository(builder);
 			
 			var componentTypeRepository = new ComponentTypeRepository();
 			builder.RegisterInstance(componentTypeRepository).SingleInstance();
@@ -111,6 +99,23 @@ namespace KAG.Server
 
 			foreach (var componentType in componentTypeRepository.ComponentTypes)
 				builder.RegisterType(componentType).AsSelf().InstancePerDependency();
+		}
+		private void RegisterPrototypeRepository(ContainerBuilder builder)
+		{
+			var prototypeDefinitionPaths = Directory.GetFiles(ResourceDirectory, "*.proto");
+			var prototypes = new List<Prototype>(prototypeDefinitionPaths.Length);
+
+			for (var i = 0; i < prototypeDefinitionPaths.Length; i++)
+			{
+				var prototypeDefinition = File.ReadAllText(prototypeDefinitionPaths[i]);
+				var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinition, JsonUtilities.StandardSerializerSettings);
+				prototypes.Add(prototype);
+			}
+			
+			builder.RegisterType<PrototypeRepository>()
+			   .WithParameter(new PositionalParameter(0, prototypes))
+			   .AsSelf()
+			   .SingleInstance();
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)

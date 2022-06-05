@@ -1,3 +1,5 @@
+Compress-Archive -Path ".\KAG.DarkRift\*" -DestinationPath ".\KAG.DarkRift\KAG.DarkRift.Server.Console.zip" -Force
+
 $secretKey = Get-Content -Path "$($env:APPDATA)\KAG\SecretKey.txt"
 
 echo "Connecting to playfab multiplayer API..."

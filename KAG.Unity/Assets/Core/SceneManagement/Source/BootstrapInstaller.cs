@@ -20,7 +20,7 @@ namespace KAG.Unity.SceneManagement
         }
 
         #endregion
-
+        
         [SerializeField]
         private Mode _mode;
 
@@ -41,7 +41,6 @@ namespace KAG.Unity.SceneManagement
 
         public override void InstallBindings()
         {
-            JSONInstaller.Install(Container);
             GlobalInstaller.Install(Container);
             LobbyInstaller.Install(Container);
             SimulationInstaller.Install(Container);
@@ -76,6 +75,7 @@ namespace KAG.Unity.SceneManagement
                     Container.BindInterfacesAndSelfTo<PlayFabMatchProvider>().FromInstance(_playfabNetworkProvider).AsSingle();
                     break;
             }
+            
             Container.Bind<UnityClient>().FromComponentOn(gameObject).AsSingle();
             NetworkInstaller.Install(Container);
         }

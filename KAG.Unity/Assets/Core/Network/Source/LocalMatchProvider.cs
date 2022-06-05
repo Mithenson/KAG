@@ -36,7 +36,11 @@ namespace KAG.Unity.Network
 			
 			if (!_localServerProcess.IsRunning)
 			{
-				await Task.FromException<Match>(new InvalidOperationException("The local server process is either not responding or has not been started."));
+				await Task.FromException<Match>(
+					new NetworkException(
+						new CustomNetworkError("Local process not started"),
+						"The local server process is either not responding or has not been started."));
+				
 				return null;
 			}
 			

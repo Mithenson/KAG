@@ -3,7 +3,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace KAG.Shared.JSON
+namespace KAG.Shared.Json
 {
 	public class CustomContractResolver : DefaultContractResolver
 	{
