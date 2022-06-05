@@ -70,6 +70,12 @@ namespace KAG.Unity.Common
 			}
 		}
 
+		private void OnDestroy()
+		{
+			if (_dataBindingTarget is IDisposable disposableDataBindingTarget)
+				disposableDataBindingTarget.Dispose();
+		}
+
 		public void Execute() => 
 			_dataBindingTarget.Set(default);
 

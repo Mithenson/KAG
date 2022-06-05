@@ -26,6 +26,7 @@ namespace KAG.Unity.SceneManagement
         
 		public override void InstallBindings()
 		{
+
 			Container.BindMemoryPool<Entity, MemoryPool<Entity>>();
 			Container.BindInterfacesAndSelfTo<EntityPool>().AsSingle();
             

@@ -5,7 +5,11 @@ namespace KAG.Unity.Common.DataBindings
 	[Serializable]
 	public sealed class ToStringDataBindingConverter : DataBindingConverter<object, string>
 	{
-		public override string ConvertExplicitly(object value) => 
-			value.ToString();
+		public override bool TryConvertExplicitly(object input, out string output)
+		{
+			output = input.ToString();
+			return true;
+		}
+		
 	}
 }

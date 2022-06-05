@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using UnityEngine;
 using Zenject.ReflectionBaking.Mono.Cecil;
 
 namespace Zenject.ReflectionBaking
@@ -30,8 +31,15 @@ namespace Zenject.ReflectionBaking
 #endif
 
                 _appDomainAssemblyLocations[assemblies[i].FullName] = assemblies[i].Location;
-
-                AddSearchDirectory(Path.GetDirectoryName(assemblies[i].Location));
+                
+                try
+                {
+                    AddSearchDirectory(Path.GetDirectoryName(assemblies[i].Location));
+                }
+                catch
+                {
+                    continue;
+                }
             }
         }
 

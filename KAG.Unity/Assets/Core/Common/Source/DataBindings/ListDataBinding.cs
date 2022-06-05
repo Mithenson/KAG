@@ -46,7 +46,9 @@ namespace KAG.Unity.Common.DataBindings
 
 				foreach (var item in _sourceList)
 				{
-					var convertedItem = _converter.Convert(item);
+					if (!_converter.TryConvert(item, out var convertedItem))
+						throw GetConversionException(item);
+					
 					_targetList.Add(convertedItem);
 				}
 				
@@ -57,17 +59,30 @@ namespace KAG.Unity.Common.DataBindings
 			}
 		}
 
-		protected virtual void OnElementAdded(object _, ListElementAddedEventArgs args) =>
-			_targetList.Add(_converter.Convert(args.Item));
-		
-		protected virtual void OnElementInserted(object _, ListElementInsertedEventArgs args) =>
-			_targetList.Insert(args.Index, _converter.Convert(args.Item));
-		
+		protected virtual void OnElementAdded(object _, ListElementAddedEventArgs args)
+		{
+			if (!_converter.TryConvert(args.Item, out var convertedItem))
+				throw GetConversionException(args.Item);
+			
+			_targetList.Add(convertedItem);
+		}
+
+		protected virtual void OnElementInserted(object _, ListElementInsertedEventArgs args)
+		{
+			if (!_converter.TryConvert(args.Item, out var convertedItem))
+				throw GetConversionException(args.Item);
+			
+			_targetList.Insert(args.Index, convertedItem);
+		}
+
 		protected virtual void OnElementRemoved(object _, ListElementRemovedEventArgs args) =>
 			_targetList.RemoveAt(args.Index);
 
 		protected virtual void OnCleared(object _) =>
 			_targetList.Clear();
+		
+		private InvalidOperationException GetConversionException(object item) =>
+			throw new InvalidOperationException($"Conversion failed for `{nameof(item)}={item}`, this isn't allowed for collections.");
 
 		public void Dispose()
 		{

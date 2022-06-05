@@ -1,4 +1,5 @@
 using DarkRift.Client.Unity;
+using KAG.Shared;
 using KAG.Unity.Common;
 using KAG.Unity.Network;
 using Sirenix.OdinInspector;
@@ -37,7 +38,7 @@ namespace KAG.Unity.SceneManagement
         
         [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.PlayFab)]
         private PlayFabMatchProvider _playfabNetworkProvider;
-        
+
         public override void InstallBindings()
         {
             GlobalInstaller.Install(Container);

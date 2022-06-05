@@ -52,9 +52,13 @@ namespace KAG.Unity.Common.DataBindings
 			
 			IMP_OnSourceChanged(value);
 		}
-		private void IMP_OnSourceChanged(object value) =>
-			_target.Set(_converter.Convert(value));
-		
+
+		private void IMP_OnSourceChanged(object value)
+		{
+			if (_converter.TryConvert(value, out var convertedValue))
+				_target.Set(convertedValue);
+		}
+
 		public void Dispose()
 		{
 			IMP_SetActive(false);

@@ -6,6 +6,7 @@ using DarkRift.Client;
 using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Shared.Network;
+using KAG.Shared.Transform;
 using KAG.Unity.Common.Models;
 using UnityEngine;
 using Zenject;
@@ -111,6 +112,10 @@ namespace KAG.Unity.Network
 				case NetworkTags.PlayerArrival:
 					OnPlayerArrival(reader);
 					break;
+				
+				case NetworkTags.PlayerDeparture:
+					OnPlayerDeparture(reader);
+					break;
 			}
 		}
 
@@ -122,13 +127,32 @@ namespace KAG.Unity.Network
 
 		private void OnPlayerArrival(DarkRiftReader reader) =>
 			CreateEntityFromReader(reader);
-
+		
 		private void CreateEntityFromReader(DarkRiftReader reader)
 		{
 			var entityId = reader.ReadUInt16();
 			var entity = _world.CreateEntity(entityId);
 			
 			reader.ReadSerializableInto(ref entity);
+		}
+
+		private void OnPlayerDeparture(DarkRiftReader reader)
+		{
+			var clientId = reader.ReadUInt16();
+			var associatedEntity = default(Entity);
+			
+			foreach (var entity in _world.Entities)
+			{
+				if (!entity.TryGetComponent(out PlayerComponent player)
+					|| player.Id != clientId)
+					continue;
+
+				associatedEntity = entity;
+				break;
+			}
+			
+			if (associatedEntity != null)
+				_world.Destroy(associatedEntity);
 		}
 	}
 }

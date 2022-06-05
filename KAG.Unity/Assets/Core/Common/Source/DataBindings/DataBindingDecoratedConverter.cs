@@ -15,7 +15,15 @@ namespace KAG.Unity.Common.DataBindings
 			_child = child;
 		}
 
-		public object Convert(object value) => 
-			_child.Convert(_self.Convert(value));
+		public bool TryConvert(object input, out object output)
+		{
+			if (!_self.TryConvert(input, out var selfOutput))
+			{
+				output = default;
+				return false;
+			}
+			
+			return _child.TryConvert(selfOutput, out output);
+		}
 	}
 }

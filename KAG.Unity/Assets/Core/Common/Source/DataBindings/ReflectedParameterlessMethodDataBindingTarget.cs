@@ -18,5 +18,8 @@ namespace KAG.Unity.Common.DataBindings
 			if (value == null || value is bool toggle && toggle)
 				_method();
 		}
+		
+		public override string ToString() => 
+			$"`Object={_method.Target}, Method={_method.Method.Name}`";
 	}
 }

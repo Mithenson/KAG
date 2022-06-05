@@ -79,8 +79,11 @@ namespace KAG.Unity.Common.DataBindings
 		private void OnDisable() =>
 			_value?.SetActive(enabled);
 
-		private void OnDestroy() => 
+		private void OnDestroy()
+		{
 			_targets.OnElementRemoved -= OnTargetRemoved;
+			_value?.Dispose();
+		}
 
 		private GameObject InstantiateTarget(object source)
 		{

@@ -8,9 +8,12 @@ namespace KAG.Unity.Common.DataBindings
 		
 		public LambdaDataBindingConverter(Func<TInput, TOutput> func) => 
 			_func = func;
-		
-		public override TOutput ConvertExplicitly(TInput input) => 
-			_func(input);
+
+		public override bool TryConvertExplicitly(TInput input, out TOutput output)
+		{
+			output = _func(input);
+			return true;
+		}
 
 		public static implicit operator LambdaDataBindingConverter<TInput, TOutput>(Func<TInput, TOutput> func) =>
 			new LambdaDataBindingConverter<TInput, TOutput>(func);

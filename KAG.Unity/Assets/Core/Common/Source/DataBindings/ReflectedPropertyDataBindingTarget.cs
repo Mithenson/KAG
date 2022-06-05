@@ -14,5 +14,8 @@ namespace KAG.Unity.Common.DataBindings
 
 		public void Set(object value) =>
 			_setter((T)value);
+		
+		public override string ToString() => 
+			$"`Object={_setter.Target}, Property setter={_setter.Method.Name}`";
 	}
 }

@@ -76,7 +76,10 @@ namespace KAG.Unity.Common.DataBindings
 
 		private void OnDisable() =>
 			_value?.SetActive(enabled);
-		
+
+		private void OnDestroy() => 
+			_value?.Dispose();
+
 		public ObservableDataBindingSource GetDataBindingSource(DiContainer container)
 		{
 			var sourceObservable = _sourceBuilder.Build(container);

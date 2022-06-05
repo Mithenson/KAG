@@ -17,12 +17,13 @@ namespace KAG.Unity.UI
 		[SerializeField, Range(0, 100)]
 		private int _separatorIconSize = 75;
 		
-		public override string ConvertExplicitly(MinutesAndSeconds input)
+		public override bool TryConvertExplicitly(MinutesAndSeconds input, out string output)
 		{
 			var minutes = input.Minutes < 10 ? $"0{input.Minutes}" : input.Minutes.ToString();
 			var seconds = input.Seconds < 10 ? $"0{input.Seconds}" : input.Seconds.ToString();
 			
-			return $"{minutes}<space={_leftSpacing}em><size={_separatorIconSize}%><sprite name=\"Icon_PictoIcon_TimeColon_Alt\"></size><space={_rightSpacing}em>{seconds}m";	
+			output = $"{minutes}<space={_leftSpacing}em><size={_separatorIconSize}%><sprite name=\"Icon_PictoIcon_TimeColon_Alt\"></size><space={_rightSpacing}em>{seconds}m";
+			return true;
 		}
 	}
 }

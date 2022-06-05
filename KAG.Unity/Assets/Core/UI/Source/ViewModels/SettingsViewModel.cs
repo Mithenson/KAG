@@ -1,4 +1,5 @@
-﻿using KAG.Unity.Common.Observables;
+﻿using KAG.Unity.Common.Models;
+using KAG.Unity.Common.Observables;
 
 namespace KAG.Unity.UI.ViewModels
 {

@@ -5,11 +5,11 @@ namespace KAG.Unity.Common.DataBindings
 	public interface IDataBindingConverter
 	{
 		Type OutputType { get; }
-		object Convert(object value);
+		bool TryConvert(object input, out object output);
 	}
 
-	public interface IDataBindingConverter<in TInput, out TOutput> : IDataBindingConverter
+	public interface IDataBindingConverter<in TInput, TOutput> : IDataBindingConverter
 	{
-		TOutput Convert(TInput input);
+		bool TryConvert(TInput input, out TOutput output);
 	}
 }

@@ -14,5 +14,8 @@ namespace KAG.Unity.Common.DataBindings
 
 		public void Set(object value) =>
 			_method((T)value);
+
+		public override string ToString() => 
+			$"`Object={_method.Target}, Method={_method.Method.Name}`";
 	}
 }

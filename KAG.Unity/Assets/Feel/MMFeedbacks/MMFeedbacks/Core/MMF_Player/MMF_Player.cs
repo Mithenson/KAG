@@ -45,6 +45,8 @@ namespace MoreMountains.Feedbacks
         public bool SkippingToTheEnd { get; protected set; }
         
         protected Type _t;
+
+        private bool _hasBeenInitialized;
         
         #endregion
         
@@ -119,6 +121,9 @@ namespace MoreMountains.Feedbacks
         /// <param name="feedbacksOwner"></param>
         public override void Initialization()
         {
+            if (_hasBeenInitialized)
+                return;
+            
             SkippingToTheEnd = false;
             IsPlaying = false;
             _lastStartAt = -float.MaxValue;
@@ -131,6 +136,8 @@ namespace MoreMountains.Feedbacks
                     FeedbacksList[i].Initialization(this);
                 }                
             }
+
+            _hasBeenInitialized = true;
         }
 
         #endregion
@@ -283,6 +290,9 @@ namespace MoreMountains.Feedbacks
                 return;
             }
             
+            if (!_hasBeenInitialized)
+                Initialization();
+            
             if (ShouldRevertOnNextPlay)
             {
                 Revert();
@@ -301,11 +311,12 @@ namespace MoreMountains.Feedbacks
             _lastStartAt = _startTime;
             _totalDuration = TotalDuration;
             
-            if (Time.frameCount < 2)
+            // Commented out to not have discrepancies between build & editor
+            /*if (Time.frameCount < 2)
             {
 	            StartCoroutine(FrameOnePlayCo(position, feedbacksIntensity, forceRevert));
 	            return;
-            }
+            }*/
 
             if (InitialDelay > 0f)
             {
@@ -428,14 +439,10 @@ namespace MoreMountains.Feedbacks
             while ((i >= 0) && (i < count))
             {
                 if (!IsPlaying)
-                {
                     yield break;
-                }
 
                 if (FeedbacksList[i] == null)
-                {
                     yield break;
-                }
                 
                 if (((FeedbacksList[i].Active) && (FeedbacksList[i].ScriptDrivenPause)) || InScriptDrivenPause)
                 {
@@ -451,6 +458,7 @@ namespace MoreMountains.Feedbacks
                         {
                             ResumeFeedbacks();
                         }
+                        
                         yield return null;
                     } 
                 }
@@ -463,18 +471,15 @@ namespace MoreMountains.Feedbacks
                     Events.TriggerOnPause(this);
                     // we stay here until all previous feedbacks have finished
                     while (Time.unscaledTime - _lastStartAt < _holdingMax)
-                    {
                         yield return null;
-                    }
+                    
                     _holdingMax = 0f;
                     _lastStartAt = Time.unscaledTime;
                 }
 
                 // plays the feedback
                 if (FeedbackCanPlay(FeedbacksList[i]))
-                {
                     FeedbacksList[i].Play(position, feedbacksIntensity);
-                }
 
                 // Handles pause
                 if ((FeedbacksList[i].Pause != null) && (FeedbacksList[i].Active) && (FeedbacksList[i].ShouldPlayInThisSequenceDirection))
@@ -564,16 +569,16 @@ namespace MoreMountains.Feedbacks
                 }
                 i += (Direction == Directions.TopToBottom) ? 1 : -1;
             }
+            
             float unscaledTimeAtEnd = Time.unscaledTime;
             while (Time.unscaledTime - unscaledTimeAtEnd < _holdingMax)
-            {
                 yield return null;
-            }
+            
             while (HasFeedbackStillPlaying())
-            {
                 yield return null;
-            }
+            
             IsPlaying = false;
+            
             Events.TriggerOnComplete(this);
             ApplyAutoRevert();
         }

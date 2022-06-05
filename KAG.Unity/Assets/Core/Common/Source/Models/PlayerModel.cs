@@ -7,6 +7,7 @@ namespace KAG.Unity.Common.Models
 	public class PlayerModel : Observable
 	{
 		private const string IdSaveKey = "Id";
+		private const string NameSaveKey = "Name";
 		
 		public string Id
 		{
@@ -32,8 +33,18 @@ namespace KAG.Unity.Common.Models
 		public string Name
 		{
 			get => _name;
-			set => ChangeProperty(ref _name, value);
+			set
+			{
+				ChangeProperty(ref _name, value);
+				PlayerPrefs.SetString(NameSaveKey, _name);
+			}
 		}
 		private string _name;
+
+		public PlayerModel()
+		{
+			if (PlayerPrefs.HasKey(NameSaveKey))
+				_name = PlayerPrefs.GetString(NameSaveKey);
+		}
 	}
 }

@@ -11,14 +11,17 @@ namespace KAG.Unity.Common.DataBindings
 
 		private bool _hasBeenCalledOnce;
 
-		public override bool ConvertExplicitly(object input)
+		public override bool TryConvertExplicitly(object input, out bool output)
 		{
 			if (!_hasBeenCalledOnce)
 			{
 				_hasBeenCalledOnce = true;
-				return _countFirst;
+				output = _countFirst;
+				
+				return true;
 			}
 
+			output = true;
 			return true;
 		}
 	}

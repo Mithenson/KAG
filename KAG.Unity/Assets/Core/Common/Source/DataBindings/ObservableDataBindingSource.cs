@@ -59,5 +59,8 @@ namespace KAG.Unity.Common.DataBindings
 
 		void IDisposable.Dispose() => 
 			_observable.OnPropertyChanged -= OnObservablePropertyChanged;
+
+		public override string ToString() => 
+			$"`{nameof(_observable)}={_observable}, {nameof(_propertyIdentifier)}={_propertyIdentifier}`";
 	}
 }
