@@ -23,7 +23,7 @@ namespace KAG.Shared.Prototype
 		{
 			var entity = new Entity(componentTypeRepository);
 
-			var identity = new IdentityComponent()  {Value = _identity }; 
+			var identity = new IdentityComponent() {Value = _identity }; 
 			entity.BYPASS_AddComponent(identity);
 
 			foreach (var component in _components)

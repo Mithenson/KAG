@@ -1,6 +1,7 @@
 ﻿using System;
 using DarkRift.Client.Unity;
 using KAG.Shared;
+using KAG.Shared.Prototype;
 using KAG.Unity.Network;
 using UnityEngine;
 using Zenject;
@@ -26,7 +27,8 @@ namespace KAG.Unity.SceneManagement
         
 		public override void InstallBindings()
 		{
-
+			Container.BindInterfacesAndSelfTo<PrototypeRepository>().AsSingle().WithArguments(new string[] { Application.persistentDataPath });
+			
 			Container.BindMemoryPool<Entity, MemoryPool<Entity>>();
 			Container.BindInterfacesAndSelfTo<EntityPool>().AsSingle();
             

@@ -2,10 +2,10 @@
   "Identity": "Player",
   "Components": [
     {
-      "$type": "KAG.Shared.Transform.PositionComponent, KAG.Shared",
+      "$type": "KAG.Shared.Transform.PositionComponent, KAG.Shared"
     },
     {
-      "$type": "KAG.Shared.Network.PlayerComponent, KAG.Shared",
+      "$type": "KAG.Shared.Network.PlayerComponent, KAG.Shared"
     }
   ]
 }

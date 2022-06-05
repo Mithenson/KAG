@@ -34,20 +34,10 @@ namespace KAG.Server
 			_connectedPlayers = new Dictionary<IClient, Player>();
 
 			_multiplayerSdkProxy = CreateMultiplayerSDKProxy();
-
-			try
-			{
-				_container = CreateDependencyInjectionContainer();
-				_lifetimeScope = _container.BeginLifetimeScope();
-				_world = _lifetimeScope.Resolve<World>();
-
-				var player = _world.CreateEntity(Identity.Player);
-				Logger.Log($"Player:\n{player}", LogType.Info);
-			}
-			catch (Exception exception)
-			{
-				Logger.Log("Exception encountered.", LogType.Error, exception);
-			}
+			
+			_container = CreateDependencyInjectionContainer();
+			_lifetimeScope = _container.BeginLifetimeScope();
+			_world = _lifetimeScope.Resolve<World>();
 			
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;

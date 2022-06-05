@@ -41,6 +41,7 @@ namespace KAG.Unity.SceneManagement
 
         public override void InstallBindings()
         {
+            JSONInstaller.Install(Container);
             GlobalInstaller.Install(Container);
             LobbyInstaller.Install(Container);
             SimulationInstaller.Install(Container);

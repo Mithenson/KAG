@@ -16,7 +16,9 @@
     "precompiledReferences": [
         "Zenject-usage.dll",
         "Sirenix.OdinInspector.Attributes.dll",
-        "KAG.Shared.dll"
+        "KAG.Shared.dll",
+        "Zenject.ReflectionBaking.Mono.Cecil.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
