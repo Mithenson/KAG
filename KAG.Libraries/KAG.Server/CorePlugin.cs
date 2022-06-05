@@ -6,8 +6,11 @@ using DarkRift;
 using DarkRift.Server;
 using KAG.Server.Pools;
 using KAG.Shared;
+using KAG.Shared.JSON;
 using KAG.Shared.Network;
+using KAG.Shared.Prototype;
 using KAG.Shared.Transform;
+using Newtonsoft.Json;
 
 namespace KAG.Server
 {
@@ -31,18 +34,23 @@ namespace KAG.Server
 			_connectedPlayers = new Dictionary<IClient, Player>();
 
 			_multiplayerSdkProxy = CreateMultiplayerSDKProxy();
-			
-			_container = CreateDependencyInjectionContainer();
-			_lifetimeScope = _container.BeginLifetimeScope();
-			_world = _lifetimeScope.Resolve<World>();
+
+			try
+			{
+				_container = CreateDependencyInjectionContainer();
+				_lifetimeScope = _container.BeginLifetimeScope();
+				_world = _lifetimeScope.Resolve<World>();
+
+				var player = _world.CreateEntity(Identity.Player);
+				Logger.Log($"Player:\n{player}", LogType.Info);
+			}
+			catch (Exception exception)
+			{
+				Logger.Log("Exception encountered.", LogType.Error, exception);
+			}
 			
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
-
-			var entity = _world.CreateEntity();
-			entity.AddComponent<PositionComponent>();
-			
-			_world.Clear();
 		}
 
 		private IMultiplayerSDKProxy CreateMultiplayerSDKProxy()
@@ -68,25 +76,51 @@ namespace KAG.Server
 
 			try
 			{
-				var componentTypeRepository = new ComponentTypeRepository();
-				builder.RegisterInstance(componentTypeRepository).SingleInstance();
-
-				builder.RegisterType<World>().AsSelf().SingleInstance();
-
-				builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
-				builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
-
-				builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
-
-				foreach (var componentType in componentTypeRepository.ComponentTypes)
-					builder.RegisterType(componentType).AsSelf().InstancePerDependency();
+				RegisterJSONDependencies(builder);
+				RegisterSimulationDependencies(builder);
 			}
 			catch (Exception exception)
 			{
-				Logger.Log("An unexpected exception occured during registration of dependencies.", LogType.Error, exception);
+				Logger.Log("An unexpected exception occured during the registration of dependencies.", LogType.Error, exception);
 			}
 
 			return builder.Build();
+		}
+
+		private void RegisterJSONDependencies(ContainerBuilder builder)
+		{
+			var settings = new JsonSerializerSettings()
+			{
+				Formatting = Formatting.Indented,
+				TypeNameHandling = TypeNameHandling.Auto,
+				ContractResolver = new CustomContractResolver(),
+				Converters = new List<JsonConverter>()
+				{
+					new IdentityConverter()
+				}
+			};
+			
+			builder.RegisterInstance(settings).SingleInstance();
+		}
+		private void RegisterSimulationDependencies(ContainerBuilder builder)
+		{
+			builder.RegisterType<PrototypeRepository>()
+			   .WithParameter(new PositionalParameter(0, new string[] { ResourceDirectory }))
+			   .AsSelf()
+			   .SingleInstance();
+			
+			var componentTypeRepository = new ComponentTypeRepository();
+			builder.RegisterInstance(componentTypeRepository).SingleInstance();
+
+			builder.RegisterType<World>().AsSelf().SingleInstance();
+
+			builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
+			builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
+
+			builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
+
+			foreach (var componentType in componentTypeRepository.ComponentTypes)
+				builder.RegisterType(componentType).AsSelf().InstancePerDependency();
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
@@ -112,9 +146,9 @@ namespace KAG.Server
 			var identificationMessage = reader.ReadSerializable<PlayerIdentificationMessage>();
 							
 			// Create player
-			var playerEntity = _world.CreateEntity();
-			var component = playerEntity.AddComponent<PlayerComponent>();
-			var position = playerEntity.AddComponent<PositionComponent>();
+			var playerEntity = _world.CreateEntity(Identity.Player);
+			var component = playerEntity.GetComponent<PlayerComponent>();
+			var position = playerEntity.GetComponent<PositionComponent>();
 
 			component.Id = client.ID;
 			component.Name = identificationMessage.Name;

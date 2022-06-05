@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DarkRift;
+using KAG.Shared.Prototype;
 
 namespace KAG.Shared
 {
@@ -10,16 +11,26 @@ namespace KAG.Shared
 		public IEnumerable<Entity> Entities => _entities.Values;
 
 		private readonly IEntityPool _entityPool;
+		private readonly PrototypeRepository _prototypeRepository;
 		
 		private Dictionary<ushort, Entity> _entities;
 		private Queue<ushort> _idsAvailableForRecycling;
 
-		public World(IEntityPool entityPool)
+		public World(IEntityPool entityPool, PrototypeRepository prototypeRepository)
 		{
 			_entityPool = entityPool;
+			_prototypeRepository = prototypeRepository;
 
 			_entities = new Dictionary<ushort, Entity>();
 			_idsAvailableForRecycling = new Queue<ushort>();
+		}
+
+		public Entity CreateEntity(Identity identity)
+		{
+			if (!_prototypeRepository.TryGetPrototypeEntity(identity, out var prototypeEntity))
+				throw new InvalidOperationException($"No prototype exists for `{nameof(identity)}={identity}`.");
+
+			return CloneEntity(prototypeEntity);
 		}
 
 		public Entity CreateEntity()
