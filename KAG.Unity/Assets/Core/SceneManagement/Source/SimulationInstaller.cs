@@ -56,17 +56,6 @@ namespace KAG.Unity.SceneManagement
 		private void InstallPrototypeRepository()
 		{
 			var prototypeDefinitionsBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "prototype_definitions"));
-
-			var serializerSettings = new JsonSerializerSettings()
-			{
-				Formatting = Formatting.Indented,
-				TypeNameHandling = TypeNameHandling.Auto,
-				ContractResolver = (IContractResolver) new CustomContractResolver(),
-				Converters = (IList<JsonConverter>) new List<JsonConverter>()
-				{
-					(JsonConverter) new IdentityConverter()
-				}
-			};
 			
 			try
 			{
