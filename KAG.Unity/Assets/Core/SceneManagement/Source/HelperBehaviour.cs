@@ -35,5 +35,11 @@ namespace KAG.Unity.SceneManagement
 		[Button]
 		public void GoBackToLobby() => 
 			NetworkManager.LeaveMatch();
+
+		[Button]
+		public void JackOfAllTrade(GameObject prefab)
+		{
+			Instantiate(prefab);
+		}
 	}
 }

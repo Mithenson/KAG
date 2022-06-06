@@ -9,8 +9,6 @@ namespace KAG.Unity.Common.Models
 {
 	public class ApplicationModel : Observable
 	{
-		private const int LobbySceneIndex = 1;
-		private const int GameSceneIndex = 2;
 		private const int PollingIntervalInMilliseconds = 500;
 		private const int DelayBeforeLoadingStartInMilliseconds = 1_000;
 		private const int DelayAfterLoadingEndInMilliseconds = 1_000;
@@ -57,7 +55,7 @@ namespace KAG.Unity.Common.Models
 			LoadingDescription = "Going into lobby";
 			await PrepareLoadingOperation();
 			
-			var operation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);
+			var operation = SceneManager.LoadSceneAsync(Constants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
 			await WaitForLoadOperation(operation);
 			await CompleteLoad(GameStatus.InLobby);
 		}
@@ -66,19 +64,18 @@ namespace KAG.Unity.Common.Models
 			LoadingDescription = "Going into game";
 			await PrepareLoadingOperation();
 			
-			var loadOperation = SceneManager.LoadSceneAsync(GameSceneIndex, LoadSceneMode.Additive);
-			var unloadOperation =  SceneManager.UnloadSceneAsync(LobbySceneIndex);
+			var loadOperation = SceneManager.LoadSceneAsync(Constants.Scenes.GameSceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(Constants.Scenes.LobbySceneIndex);
 			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
-			await CompleteLoad(GameStatus.InGame);
 		}
 		public async Task GoBackToLobby()
 		{
 			LoadingDescription = "Going back to lobby";
 			await PrepareLoadingOperation();
 			
-			var loadOperation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);
-			var unloadOperation =  SceneManager.UnloadSceneAsync(GameSceneIndex);
+			var loadOperation = SceneManager.LoadSceneAsync(Constants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(Constants.Scenes.GameSceneIndex);
 			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
 			await CompleteLoad(GameStatus.InLobby);

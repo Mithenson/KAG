@@ -6,7 +6,6 @@ using DarkRift.Client.Unity;
 using KAG.Shared.Extensions;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network.Models;
-using UnityEngine;
 
 namespace KAG.Unity.Network
 {

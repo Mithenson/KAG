@@ -22,6 +22,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - prototype_definition
+  - m_GUID: e66606f901f648e4e99176966be5f07e
+    m_Address: PlayerPresentationLinker.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - presentation_linker
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1eab3871bfda0ee41a61cfb180bd4f25, type: 2}
   m_SchemaSet:

@@ -55,8 +55,6 @@ namespace KAG.Unity.UI.ViewModels
 		}
 		private string _loadingText;
 
-		private bool _wentIntoGameAtLeastOnce;
-		
 		public ApplicationViewModel(ApplicationModel model) : base(model)
 		{
 			AddMethodBinding(nameof(ApplicationModel.GameStatus), nameof(OnGameStatusChanged));
@@ -92,9 +90,17 @@ namespace KAG.Unity.UI.ViewModels
 			LoadingText = $"Loading...{percentage}%";
 		}
 
-		public void OnLoadingDescriptionChanged(string description) =>
+		public void OnLoadingDescriptionChanged(string description)
+		{
+			if (string.IsNullOrEmpty(description))
+			{
+				LoadingDescription = string.Empty;
+				return;
+			}
+			
 			LoadingDescription = $"{description}...";
-		
+		}
+
 		public void Quit() => 
 			_model.Quit();
 	}

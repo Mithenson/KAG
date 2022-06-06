@@ -79,6 +79,7 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - prototype_definition
+    - presentation_linker
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 5cea75db17a63c84593cb78356300ab6, type: 2}

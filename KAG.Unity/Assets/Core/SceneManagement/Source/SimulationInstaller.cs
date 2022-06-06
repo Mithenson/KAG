@@ -1,6 +1,7 @@
 ﻿using System;
 using KAG.Shared;
 using KAG.Unity.Network;
+using KAG.Unity.Simulation;
 using Zenject;
 
 namespace KAG.Unity.SceneManagement
@@ -40,7 +41,7 @@ namespace KAG.Unity.SceneManagement
 
 			Container.BindInterfacesAndSelfTo<ComponentPool>().AsSingle();
 
-			Container.BindInterfacesAndSelfTo<World>().AsSingle();
+			Container.Bind(typeof(World), typeof(UnityWorld)).To<UnityWorld>().AsSingle();
 		}
 	}
 }

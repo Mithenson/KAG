@@ -1,4 +1,5 @@
-﻿using DarkRift;
+﻿using System.Collections.Generic;
+using DarkRift;
 using DarkRift.Client;
 using DarkRift.Client.Unity;
 using KAG.Shared;
@@ -9,10 +10,18 @@ namespace KAG.Unity.Network
 {
 	public sealed class NetworkManager
 	{
+		public Entity LocalPlayer => 
+			_localPlayer;
+		public IReadOnlyList<Entity> Players =>
+			_players;
+		
 		private readonly UnityClient _client;
 		private readonly World _world;
 		private readonly ApplicationModel _applicationModel;
 		private readonly PlayerModel _playerModel;
+
+		private Entity _localPlayer;
+		private List<Entity> _players;
 		
 		public NetworkManager( 
 			UnityClient client, 
@@ -25,6 +34,11 @@ namespace KAG.Unity.Network
 			_applicationModel = applicationModel;
 			_playerModel = playerModel;
 			
+			_players = new List<Entity>();
+		}
+
+		public void Start()
+		{
 			_client.MessageReceived += OnClientMessageReceived;
 			SendPlayerIdentificationMessage(_playerModel.Name);
 		}
@@ -73,12 +87,24 @@ namespace KAG.Unity.Network
 		private void OnPlayerCatchup(DarkRiftReader reader)
 		{
 			while (reader.Position < reader.Length)
-				CreateEntityFromReader(reader);
+			{
+				var entity = _world.CreateEntity(reader);
+				if (!entity.TryGetComponent(out PlayerComponent player))
+					continue;
+
+				_players.Add(entity);
+
+				if (player.Id == _client.ID)
+					_localPlayer = entity;
+			}
 		}
 
-		private void OnPlayerArrival(DarkRiftReader reader) =>
-			CreateEntityFromReader(reader);
-		
+		private void OnPlayerArrival(DarkRiftReader reader)
+		{
+			var player = _world.CreateEntity(reader);
+			_players.Add(player);
+		}
+
 		private void OnPlayerDeparture(DarkRiftReader reader)
 		{
 			var clientId = reader.ReadUInt16();
@@ -96,14 +122,6 @@ namespace KAG.Unity.Network
 			
 			if (associatedEntity != null)
 				_world.Destroy(associatedEntity);
-		}
-		
-		private void CreateEntityFromReader(DarkRiftReader reader)
-		{
-			var entityId = reader.ReadUInt16();
-			var entity = _world.CreateEntity(entityId);
-			
-			reader.ReadSerializableInto(ref entity);
 		}
 	}
 }
