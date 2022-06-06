@@ -19,6 +19,13 @@ namespace KAG.Unity.UI.ViewModels
 			set => ChangeProperty(ref _isInGame, value);
 		}
 		private bool _isInGame;
+
+		public bool WasInGame
+		{
+			get => _wasInGame;
+			set => ChangeProperty(ref _wasInGame, value);
+		}
+		private bool _wasInGame;
 		
 		public bool IsLoading
 		{
@@ -40,6 +47,8 @@ namespace KAG.Unity.UI.ViewModels
 			set => ChangeProperty(ref _loadingText, value);
 		}
 		private string _loadingText;
+
+		private bool _wentIntoGameAtLeastOnce;
 		
 		public ApplicationViewModel(ApplicationModel model) : base(model)
 		{
@@ -63,6 +72,7 @@ namespace KAG.Unity.UI.ViewModels
 					break;
 
 				case GameStatus.InGame:
+					WasInGame = true;
 					IsInGame = true;
 					break;
 			}

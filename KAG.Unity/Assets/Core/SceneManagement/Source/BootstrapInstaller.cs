@@ -1,6 +1,6 @@
 using DarkRift.Client.Unity;
-using KAG.Shared;
 using KAG.Unity.Common;
+using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -8,7 +8,7 @@ using Zenject;
 
 namespace KAG.Unity.SceneManagement
 {
-    public class BootstrapInstaller : MonoInstaller
+    public sealed class BootstrapInstaller : MonoInstaller
     {
         #region Nested types
 
@@ -23,28 +23,42 @@ namespace KAG.Unity.SceneManagement
         
         [SerializeField]
         private Mode _mode;
-
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServer)]
+        [LabelText("Socket provider")]
         private LocalMatchProvider _localServerNetworkProvider;
 
-        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServer)]
+        [LabelText("Process")]
         private LocalConsoleServerProcess _localServerProcess;
         
-        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [LabelText("Process")]
         private LocalMatchProvider _localServerViaDockerNetworkProvider;
         
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [SerializeField]
+        [LabelText("Socket provider")]
+        [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
         private LocalConsoleServerViaDockerProcess _localServerViaDockerProcess;
         
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.PlayFab)]
+        [SerializeField]
+        [LabelText("Socket provider")]
+        [ShowIf(nameof(_mode), Mode.PlayFab)]
         private PlayFabMatchProvider _playfabNetworkProvider;
 
         public override void InstallBindings()
         {
-            GlobalInstaller.Install(Container);
-            LobbyInstaller.Install(Container);
-            SimulationInstaller.Install(Container);
+            PersistentMVVMInstaller.Install(Container);
+            SimulationFoundationInstaller.Install(Container);
+            
+            InstallNetworkFoundation();
+        }
 
+        private void InstallNetworkFoundation()
+        {
             switch (_mode)
             {
                 case Mode.LocalServer:
@@ -77,7 +91,12 @@ namespace KAG.Unity.SceneManagement
             }
             
             Container.Bind<UnityClient>().FromComponentOn(gameObject).AsSingle();
-            NetworkInstaller.Install(Container);
+        }
+
+        private new void Start()
+        {
+            var applicationModel = Container.Resolve<ApplicationModel>();
+            applicationModel.GoInLobby();
         }
     }
 }

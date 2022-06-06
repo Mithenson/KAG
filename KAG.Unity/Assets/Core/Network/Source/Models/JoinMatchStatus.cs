@@ -1,4 +1,4 @@
-﻿namespace KAG.Unity.Common.Models
+﻿namespace KAG.Unity.Network.Models
 {
 	public enum JoinMatchStatus
 	{

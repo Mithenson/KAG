@@ -3,6 +3,7 @@ using System.Threading;
 using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
+using KAG.Unity.Network.Models;
 using UnityEngine;
 using Zenject;
 
@@ -83,15 +84,13 @@ namespace KAG.Unity.UI.ViewModels
 
 		private readonly PlayerModel _playerModel;
 		private readonly JoinMatchModel _model;
-		private readonly NetworkManager _networkManager;
 
 		private CancellationTokenSource _joinMatchCancellation;
 		
-		public JoinMatchViewModel(PlayerModel playerModel, JoinMatchModel model, NetworkManager networkManager)
+		public JoinMatchViewModel(PlayerModel playerModel, JoinMatchModel model)
 		{
 			_playerModel = playerModel;
 			_model = model;
-			_networkManager = networkManager;
 			
 			AddMethodBinding(playerModel, nameof(PlayerModel.Name), nameof(OnPlayerNameChanged));
 			AddMethodBinding(model, nameof(JoinMatchModel.Status), nameof(OnStatusChanged));
@@ -165,7 +164,7 @@ namespace KAG.Unity.UI.ViewModels
 			if (!HasBeenStarted)
 			{
 				_joinMatchCancellation = new CancellationTokenSource(_timeOutDelayInMilliseconds);
-				var task = _networkManager.JoinMatch(_joinMatchCancellation.Token);
+				var task = _model.JoinMatch(_joinMatchCancellation.Token);
 				
 				try
 				{

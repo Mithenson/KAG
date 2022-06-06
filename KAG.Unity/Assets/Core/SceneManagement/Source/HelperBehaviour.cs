@@ -10,32 +10,30 @@ namespace KAG.Unity.SceneManagement
 {
 	public class HelperBehaviour : MonoBehaviour
 	{
-		private JoinMatchViewModel _joinMatchViewModel;
-		private ApplicationModel _applicationModel;
-		private NetworkManager _networkManager;
+		private JoinMatchViewModel JoinMatchViewModel => _container.Resolve<JoinMatchViewModel>();
+		private ApplicationModel ApplicationModel => _container.Resolve<ApplicationModel>();
+		private NetworkManager NetworkManager => _container.Resolve<NetworkManager>();
+
+		private DiContainer _container;
 
 		[Inject]
-		public void Inject(JoinMatchViewModel joinMatchViewModel, ApplicationModel applicationModel, NetworkManager networkManager)
-		{
-			_joinMatchViewModel = joinMatchViewModel;
-			_applicationModel = applicationModel;
-			_networkManager = networkManager;
-		}
+		public void Inject(DiContainer container) => 
+			_container = container;
 
 		[Button]
 		public void SetJoinMatchStep(string value) => 
-			_joinMatchViewModel.Step = value;
+			JoinMatchViewModel.Step = value;
 		
 		[Button]
 		public void SetIsJoiningMatch(bool value) => 
-			_joinMatchViewModel.IsJoiningMatch = value;
+			JoinMatchViewModel.IsJoiningMatch = value;
 
 		[Button]
 		public void GoInGame() => 
-			_applicationModel.GoInGame();
+			ApplicationModel.GoInGame();
 		
 		[Button]
 		public void GoBackToLobby() => 
-			_networkManager.LeaveMatch();
+			NetworkManager.LeaveMatch();
 	}
 }

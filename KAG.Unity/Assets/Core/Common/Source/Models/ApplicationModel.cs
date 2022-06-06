@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -7,8 +9,8 @@ namespace KAG.Unity.Common.Models
 {
 	public class ApplicationModel : Observable
 	{
-		private const int LobbySceneIndex = 0;
-		private const int GameSceneIndex = 1;
+		private const int LobbySceneIndex = 1;
+		private const int GameSceneIndex = 2;
 		private const int PollingIntervalInMilliseconds = 500;
 		private const int DelayBeforeLoadingStartInMilliseconds = 1_000;
 		private const int DelayAfterLoadingEndInMilliseconds = 1_000;
@@ -33,31 +35,43 @@ namespace KAG.Unity.Common.Models
 			set => ChangeProperty(ref _gameStatus, value);
 		}
 		private GameStatus _gameStatus;
-		
+
+		private List<float> _loadingProgresses;
+
+		public ApplicationModel()
+		{
+			_isLoading = true;
+
+			_loadingProgresses = new List<float>(2);
+		}
+
+		public async Task GoInLobby()
+		{
+			await PrepareLoadingOperation();
+			
+			var operation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);
+			await WaitForLoadOperation(operation);
+			await CompleteLoad(GameStatus.InLobby);
+		}
 		public async Task GoInGame()
 		{
-			await LoadScene(GameSceneIndex, LoadSceneMode.Additive);
-			GameStatus = GameStatus.InGame;
+			await PrepareLoadingOperation();
+			
+			var loadOperation = SceneManager.LoadSceneAsync(GameSceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(LobbySceneIndex);
+
+			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
+			await CompleteLoad(GameStatus.InGame);
 		}
 		public async Task GoBackToLobby()
 		{
-			await UnloadedScene(GameSceneIndex);
-			GameStatus = GameStatus.InLobby;
-		}
-
-		private async Task LoadScene(int sceneIndex, LoadSceneMode loadSceneMode)
-		{
 			await PrepareLoadingOperation();
 			
-			var operation = SceneManager.LoadSceneAsync(sceneIndex, loadSceneMode);
-			await WaitForLoadOperation(operation);
-		}
-		private async Task UnloadedScene(int sceneIndex)
-		{
-			await PrepareLoadingOperation();
+			var loadOperation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(GameSceneIndex);
 			
-			var operation = SceneManager.UnloadSceneAsync(sceneIndex);
-			await WaitForLoadOperation(operation);
+			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
+			await CompleteLoad(GameStatus.InLobby);
 		}
 
 		private async Task PrepareLoadingOperation()
@@ -67,20 +81,39 @@ namespace KAG.Unity.Common.Models
 			LoadingProgress = 0.0f;
 			IsLoading = true;
 			
+			_loadingProgresses.Clear();
+			
 			await Task.Delay(DelayBeforeLoadingStartInMilliseconds);
 		}
 		private async Task WaitForLoadOperation(AsyncOperation operation)
 		{
+			var loadProgressIndex = _loadingProgresses.Count;
+			_loadingProgresses.Add(0.0f);
+			
 			while (!operation.isDone)
 			{
 				await Task.Delay(PollingIntervalInMilliseconds);
-				LoadingProgress = operation.progress;
+				SetLoadingProgress(loadProgressIndex, operation.progress);
 			}
 
-			LoadingProgress = 1.0f;
-			await Task.Delay(DelayAfterLoadingEndInMilliseconds);
+			SetLoadingProgress(loadProgressIndex, 1.0f);
+			await Task.CompletedTask;
+		}
 
+		private void SetLoadingProgress(int index, float value)
+		{
+			_loadingProgresses[index] = value;
+			
+			LoadingProgress = _loadingProgresses.Min();
+		}
+
+		private async Task CompleteLoad(GameStatus status)
+		{
+			await Task.Delay(DelayAfterLoadingEndInMilliseconds);
+			
 			IsLoading = false;
+			GameStatus = status;
+			
 			await Task.CompletedTask;
 		}
 
