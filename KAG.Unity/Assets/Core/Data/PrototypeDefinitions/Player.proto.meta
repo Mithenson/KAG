@@ -7,6 +7,6 @@ ScriptedImporter:
   externalObjects: {}
   serializedVersion: 2
   userData: 
-  assetBundleName: prototype_definitions
+  assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 11500000, guid: 3b4e642ade4443f59f149137d2040f41, type: 3}

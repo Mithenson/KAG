@@ -6,8 +6,8 @@ namespace KAG.Shared.Prototype
 	public class PrototypeRepository
 	{
 		private Dictionary<Identity, Entity> _prototypeEntities;
-
-		public PrototypeRepository(IEnumerable<Prototype> prototypes, ComponentTypeRepository componentTypeRepository)
+		
+		public void Initialize(IEnumerable<Prototype> prototypes, ComponentTypeRepository componentTypeRepository)
 		{
 			_prototypeEntities = new Dictionary<Identity, Entity>();
 
@@ -18,7 +18,7 @@ namespace KAG.Shared.Prototype
 					
 				_prototypeEntities.Add(prototype.Identity, prototype.CreateEntity(componentTypeRepository));
 			}
-		}
+		}		
 
 		public bool TryGetPrototypeEntity(Identity identity, out Entity entity) => 
 			_prototypeEntities.TryGetValue(identity, out entity);

@@ -29,6 +29,13 @@ namespace KAG.Unity.Common.Models
 		}
 		private float _loadingProgress;
 
+		public string LoadingDescription
+		{
+			get => _loadingDescription;
+			set => ChangeProperty(ref _loadingDescription, value);
+		}
+		private string _loadingDescription;
+
 		public GameStatus GameStatus
 		{
 			get => _gameStatus;
@@ -47,6 +54,7 @@ namespace KAG.Unity.Common.Models
 
 		public async Task GoInLobby()
 		{
+			LoadingDescription = "Going into lobby";
 			await PrepareLoadingOperation();
 			
 			var operation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);
@@ -55,16 +63,18 @@ namespace KAG.Unity.Common.Models
 		}
 		public async Task GoInGame()
 		{
+			LoadingDescription = "Going into game";
 			await PrepareLoadingOperation();
 			
 			var loadOperation = SceneManager.LoadSceneAsync(GameSceneIndex, LoadSceneMode.Additive);
 			var unloadOperation =  SceneManager.UnloadSceneAsync(LobbySceneIndex);
-
+			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
 			await CompleteLoad(GameStatus.InGame);
 		}
 		public async Task GoBackToLobby()
 		{
+			LoadingDescription = "Going back to lobby";
 			await PrepareLoadingOperation();
 			
 			var loadOperation = SceneManager.LoadSceneAsync(LobbySceneIndex, LoadSceneMode.Additive);

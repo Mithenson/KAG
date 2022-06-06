@@ -40,6 +40,13 @@ namespace KAG.Unity.UI.ViewModels
 			set => ChangeProperty(ref _loadingProgress, Mathf.Clamp01(value));
 		}
 		private float _loadingProgress;
+
+		public string LoadingDescription
+		{
+			get => _loadingDescription;
+			set => ChangeProperty(ref _loadingDescription, value);
+		}
+		private string _loadingDescription;
 		
 		public string LoadingText
 		{
@@ -55,6 +62,7 @@ namespace KAG.Unity.UI.ViewModels
 			AddMethodBinding(nameof(ApplicationModel.GameStatus), nameof(OnGameStatusChanged));
 			AddPropertyBinding(nameof(ApplicationModel.IsLoading), nameof(IsLoading));
 			AddPropertyBinding(nameof(ApplicationModel.LoadingProgress), nameof(LoadingProgress));
+			AddMethodBinding(nameof(ApplicationModel.LoadingDescription), nameof(OnLoadingDescriptionChanged));
 			AddMethodBinding(nameof(ApplicationModel.LoadingProgress), nameof(OnLoadingProgressChanged));
 		}
 
@@ -83,6 +91,9 @@ namespace KAG.Unity.UI.ViewModels
 			var percentage = Mathf.RoundToInt(progress * 100.0f);
 			LoadingText = $"Loading...{percentage}%";
 		}
+
+		public void OnLoadingDescriptionChanged(string description) =>
+			LoadingDescription = $"{description}...";
 		
 		public void Quit() => 
 			_model.Quit();

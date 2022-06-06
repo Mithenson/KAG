@@ -41,7 +41,7 @@ namespace KAG.Server
 			
 			_lifetimeScope = _container.BeginLifetimeScope();
 			_world = _lifetimeScope.Resolve<World>();
-			
+
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
 		}
@@ -85,10 +85,10 @@ namespace KAG.Server
 		
 		private void RegisterSimulationDependencies(ContainerBuilder builder)
 		{
-			RegisterPrototypeRepository(builder);
-			
 			var componentTypeRepository = new ComponentTypeRepository();
 			builder.RegisterInstance(componentTypeRepository).SingleInstance();
+			
+			RegisterPrototypeRepository(builder, componentTypeRepository);
 
 			builder.RegisterType<World>().AsSelf().SingleInstance();
 
@@ -100,7 +100,7 @@ namespace KAG.Server
 			foreach (var componentType in componentTypeRepository.ComponentTypes)
 				builder.RegisterType(componentType).AsSelf().InstancePerDependency();
 		}
-		private void RegisterPrototypeRepository(ContainerBuilder builder)
+		private void RegisterPrototypeRepository(ContainerBuilder builder, ComponentTypeRepository componentTypeRepository)
 		{
 			var prototypeDefinitionPaths = Directory.GetFiles(ResourceDirectory, "*.proto");
 			var prototypes = new List<Prototype>(prototypeDefinitionPaths.Length);
@@ -111,11 +111,11 @@ namespace KAG.Server
 				var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinition, JsonUtilities.StandardSerializerSettings);
 				prototypes.Add(prototype);
 			}
+
+			var prototypeRepository = new PrototypeRepository();
+			prototypeRepository.Initialize(prototypes, componentTypeRepository);
 			
-			builder.RegisterType<PrototypeRepository>()
-			   .WithParameter(new PositionalParameter(0, prototypes))
-			   .AsSelf()
-			   .SingleInstance();
+			builder.RegisterInstance(prototypeRepository).SingleInstance();
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
