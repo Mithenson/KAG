@@ -27,6 +27,12 @@ namespace KAG.Shared
 
 			_components = new Dictionary<Type, Component>();
 		}
+		internal Entity(ComponentTypeRepository componentTypeRepository)
+		{
+			_componentTypeRepository = componentTypeRepository;
+			
+			_components = new Dictionary<Type, Component>();
+		}
 
 		public TComponent AddComponent<TComponent>() where TComponent : Component
 		{
@@ -42,6 +48,8 @@ namespace KAG.Shared
 			
 			IMP_AddComponent(component);
 		}
+		internal void BYPASS_AddComponent(Component component) =>
+			_components.Add(component.GetType(), component);
 		private void IMP_AddComponent(Component component)
 		{
 			var type = component.GetType();
@@ -331,8 +339,8 @@ namespace KAG.Shared
 			builder.AppendLine($"{nameof(Id)}={Id}");
 			
 			builder.AppendLine("Components=[");
-			foreach (var componentType in _components.Keys)
-				builder.AppendLine($"	{componentType.Name}");
+			foreach (var kvp in _components)
+				builder.AppendLine($"	{kvp.Key.Name}=({kvp.Value})");
 
 			builder.AppendLine("]");
 			return builder.ToString();

@@ -1,14 +1,19 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using DarkRift.Client.Unity;
 using KAG.Shared;
+using KAG.Shared.Json;
+using KAG.Shared.Prototype;
 using KAG.Unity.Common;
+using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
+using Newtonsoft.Json;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Zenject;
 
 namespace KAG.Unity.SceneManagement
 {
-    public class BootstrapInstaller : MonoInstaller
+    public sealed class BootstrapInstaller : SceneInstaller
     {
         #region Nested types
 
@@ -21,30 +26,46 @@ namespace KAG.Unity.SceneManagement
 
         #endregion
 
+        private const int DelayBeforeLobbyLoadInMilliseconds = 250;
+        
         [SerializeField]
         private Mode _mode;
-
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServer)]
+        [LabelText("Socket provider")]
         private LocalMatchProvider _localServerNetworkProvider;
 
-        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServer)]
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServer)]
+        [LabelText("Process")]
         private LocalConsoleServerProcess _localServerProcess;
         
-        [SerializeField, LabelText("Process"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [SerializeField]
+        [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [LabelText("Process")]
         private LocalMatchProvider _localServerViaDockerNetworkProvider;
         
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [SerializeField]
+        [LabelText("Socket provider")]
+        [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
         private LocalConsoleServerViaDockerProcess _localServerViaDockerProcess;
         
-        [SerializeField, LabelText("Socket provider"), ShowIf(nameof(_mode), Mode.PlayFab)]
+        [SerializeField]
+        [LabelText("Socket provider")]
+        [ShowIf(nameof(_mode), Mode.PlayFab)]
         private PlayFabMatchProvider _playfabNetworkProvider;
 
         public override void InstallBindings()
         {
-            GlobalInstaller.Install(Container);
-            LobbyInstaller.Install(Container);
-            SimulationInstaller.Install(Container);
+            PersistentMVVMInstaller.Install(Container);
+            SimulationFoundationInstaller.Install(Container);
+            
+            InstallNetworkFoundation();
+        }
 
+        private void InstallNetworkFoundation()
+        {
             switch (_mode)
             {
                 case Mode.LocalServer:
@@ -75,8 +96,37 @@ namespace KAG.Unity.SceneManagement
                     Container.BindInterfacesAndSelfTo<PlayFabMatchProvider>().FromInstance(_playfabNetworkProvider).AsSingle();
                     break;
             }
+            
             Container.Bind<UnityClient>().FromComponentOn(gameObject).AsSingle();
-            NetworkInstaller.Install(Container);
+        }
+        
+        private new async void Start()
+        {
+            var prototypeDefinitionsLoadOperation = new AssetLoadOperation<TextAsset>(Constants.Addressables.PrototypeDefinitionLabel);
+            
+            await LoadAssets(prototypeDefinitionsLoadOperation);
+            
+            InitializePresentationRepository(prototypeDefinitionsLoadOperation);
+            
+            await Task.Delay(DelayBeforeLobbyLoadInMilliseconds);
+            
+            var applicationModel = Container.Resolve<ApplicationModel>();
+            await applicationModel.GoInLobby();
+        }
+
+        private void InitializePresentationRepository(AssetLoadOperation<TextAsset> loadOperation)
+        {
+            var prototypes = new List<Prototype>();
+            foreach (var prototypeDefinition in loadOperation.Results)
+            {
+                var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinition.text, JsonUtilities.StandardSerializerSettings);
+                prototypes.Add(prototype);
+            }
+
+            var componentTypeRepository = Container.Resolve<ComponentTypeRepository>();
+            var prototypeRepository = Container.Resolve<PrototypeRepository>();
+
+            prototypeRepository.Initialize(prototypes, componentTypeRepository);
         }
     }
 }

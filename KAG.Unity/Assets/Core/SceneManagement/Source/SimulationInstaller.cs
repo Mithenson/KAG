@@ -1,14 +1,12 @@
 ﻿using System;
-using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Unity.Network;
-using UnityEngine;
+using KAG.Unity.Simulation;
 using Zenject;
-using Component = KAG.Shared.Component;
 
 namespace KAG.Unity.SceneManagement
 {
-	public sealed class SimulationInstaller : Installer<SimulationInstaller>
+	public sealed class SimulationInstaller : Installer<ComponentTypeRepository, SimulationInstaller>
 	{
 		#region Nested types
 
@@ -23,17 +21,18 @@ namespace KAG.Unity.SceneManagement
 		}
 
 		#endregion
-        
+
+		private readonly ComponentTypeRepository _componentTypeRepository;
+		
+		public SimulationInstaller(ComponentTypeRepository componentTypeRepository) =>
+			_componentTypeRepository = componentTypeRepository;
+
 		public override void InstallBindings()
 		{
-
 			Container.BindMemoryPool<Entity, MemoryPool<Entity>>();
 			Container.BindInterfacesAndSelfTo<EntityPool>().AsSingle();
-            
-			var componentTypeRepository = new ComponentTypeRepository();
-			Container.BindInterfacesAndSelfTo<ComponentTypeRepository>().FromInstance(componentTypeRepository).AsSingle();
-
-			foreach (var componentType in componentTypeRepository.ComponentTypes)
+			
+			foreach (var componentType in _componentTypeRepository.ComponentTypes)
 			{
 				var poolBinderType = typeof(ComponentPoolBinder<>).MakeGenericType(componentType);
 				var poolBinder = (ComponentPoolBinder)Activator.CreateInstance(poolBinderType);
@@ -42,7 +41,7 @@ namespace KAG.Unity.SceneManagement
 
 			Container.BindInterfacesAndSelfTo<ComponentPool>().AsSingle();
 
-			Container.BindInterfacesAndSelfTo<World>().AsSingle();
+			Container.Bind(typeof(World), typeof(UnityWorld)).To<UnityWorld>().AsSingle();
 		}
 	}
 }

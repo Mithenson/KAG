@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Autofac;
 using DarkRift;
 using DarkRift.Server;
 using KAG.Server.Pools;
 using KAG.Shared;
+using KAG.Shared.Json;
 using KAG.Shared.Network;
+using KAG.Shared.Prototype;
 using KAG.Shared.Transform;
+using Newtonsoft.Json;
 
 namespace KAG.Server
 {
@@ -31,18 +35,15 @@ namespace KAG.Server
 			_connectedPlayers = new Dictionary<IClient, Player>();
 
 			_multiplayerSdkProxy = CreateMultiplayerSDKProxy();
+
+			if (!TryCreateDependencyInjectionContainer(out _container))
+				return;
 			
-			_container = CreateDependencyInjectionContainer();
 			_lifetimeScope = _container.BeginLifetimeScope();
 			_world = _lifetimeScope.Resolve<World>();
-			
+
 			ClientManager.ClientConnected += OnClientConnected;
 			ClientManager.ClientDisconnected += OnClientDisconnected;
-
-			var entity = _world.CreateEntity();
-			entity.AddComponent<PositionComponent>();
-			
-			_world.Clear();
 		}
 
 		private IMultiplayerSDKProxy CreateMultiplayerSDKProxy()
@@ -62,31 +63,59 @@ namespace KAG.Server
 			return instance;
 		}
 
-		private IContainer CreateDependencyInjectionContainer()
+		private bool TryCreateDependencyInjectionContainer(out IContainer container)
 		{
 			var builder = new ContainerBuilder();
 
 			try
 			{
-				var componentTypeRepository = new ComponentTypeRepository();
-				builder.RegisterInstance(componentTypeRepository).SingleInstance();
-
-				builder.RegisterType<World>().AsSelf().SingleInstance();
-
-				builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
-				builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
-
-				builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
-
-				foreach (var componentType in componentTypeRepository.ComponentTypes)
-					builder.RegisterType(componentType).AsSelf().InstancePerDependency();
+				RegisterSimulationDependencies(builder);
 			}
 			catch (Exception exception)
 			{
-				Logger.Log("An unexpected exception occured during registration of dependencies.", LogType.Error, exception);
+				Logger.Log("An unexpected exception occured during the registration of dependencies.", LogType.Error, exception);
+
+				container = default;
+				return false;
 			}
 
-			return builder.Build();
+			container = builder.Build();
+			return true;
+		}
+		
+		private void RegisterSimulationDependencies(ContainerBuilder builder)
+		{
+			var componentTypeRepository = new ComponentTypeRepository();
+			builder.RegisterInstance(componentTypeRepository).SingleInstance();
+			
+			RegisterPrototypeRepository(builder, componentTypeRepository);
+
+			builder.RegisterType<World>().AsSelf().SingleInstance();
+
+			builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
+			builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
+
+			builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
+
+			foreach (var componentType in componentTypeRepository.ComponentTypes)
+				builder.RegisterType(componentType).AsSelf().InstancePerDependency();
+		}
+		private void RegisterPrototypeRepository(ContainerBuilder builder, ComponentTypeRepository componentTypeRepository)
+		{
+			var prototypeDefinitionPaths = Directory.GetFiles(ResourceDirectory, "*.proto");
+			var prototypes = new List<Prototype>(prototypeDefinitionPaths.Length);
+
+			for (var i = 0; i < prototypeDefinitionPaths.Length; i++)
+			{
+				var prototypeDefinition = File.ReadAllText(prototypeDefinitionPaths[i]);
+				var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinition, JsonUtilities.StandardSerializerSettings);
+				prototypes.Add(prototype);
+			}
+
+			var prototypeRepository = new PrototypeRepository();
+			prototypeRepository.Initialize(prototypes, componentTypeRepository);
+			
+			builder.RegisterInstance(prototypeRepository).SingleInstance();
 		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
@@ -112,9 +141,9 @@ namespace KAG.Server
 			var identificationMessage = reader.ReadSerializable<PlayerIdentificationMessage>();
 							
 			// Create player
-			var playerEntity = _world.CreateEntity();
-			var component = playerEntity.AddComponent<PlayerComponent>();
-			var position = playerEntity.AddComponent<PositionComponent>();
+			var playerEntity = _world.CreateEntity(Identity.Player);
+			var component = playerEntity.GetComponent<PlayerComponent>();
+			var position = playerEntity.GetComponent<PositionComponent>();
 
 			component.Id = client.ID;
 			component.Name = identificationMessage.Name;

@@ -2,7 +2,7 @@
 
 namespace KAG.Shared.Transform
 {
-	public class PositionComponent : Component
+	public sealed class PositionComponent : Component
 	{
 		public Vector2 Value;
 
@@ -10,5 +10,8 @@ namespace KAG.Shared.Transform
 			evt.Writer.Write(Value);
 		protected override void Deserialize(DeserializeEvent evt) =>
 			Value = evt.Reader.ReadSerializable<Vector2>();
+
+		public override string ToString() => 
+			$"{nameof(Value)}={Value}";
 	}
 }

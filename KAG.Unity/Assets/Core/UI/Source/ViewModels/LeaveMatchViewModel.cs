@@ -17,7 +17,11 @@ namespace KAG.Unity.UI.ViewModels
 		public LeaveMatchViewModel(NetworkManager networkManager) => 
 			_networkManager = networkManager;
 
-		public void LeaveMatch() => 
+		public void LeaveMatch()
+		{
+			IsActive = false;
+			
 			_networkManager.LeaveMatch();
+		}
 	}
 }

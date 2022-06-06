@@ -2,6 +2,8 @@
 {
 	public enum GameStatus
 	{
+		None,
+		
 		InLobby,
 		Transitioning,
 		InGame

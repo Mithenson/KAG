@@ -1,3 +1,11 @@
+$zipDstPath = ".\KAG.DarkRift\KAG.DarkRift.Server.Console.zip"
+
+if (Test-Path $zipDstPath -PathType Leaf) {
+	Remove-Item $zipDstPath
+}
+
+Get-ChildItem -Path ".\KAG.DarkRift\*" -Force | Compress-Archive -DestinationPath $zipDstPath -Force
+
 $secretKey = Get-Content -Path "$($env:APPDATA)\KAG\SecretKey.txt"
 
 echo "Connecting to playfab multiplayer API..."
