@@ -15,8 +15,8 @@ namespace KAG.Shared.Transform
 		public static readonly Vector2 Up = new Vector2(0.0f, 1.0f);
 		public static readonly Vector2 Down = new Vector2(0.0f, -1.0f);
 
-		public float SqrMagnitude => (float)Math.Sqrt(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
-		public float Magnitude => (float)(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
+		public float SqrMagnitude => (float)(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
+		public float Magnitude => (float)Math.Sqrt(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
 		public Vector2 Normalized
 		{
 			get

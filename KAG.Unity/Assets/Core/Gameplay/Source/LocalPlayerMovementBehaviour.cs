@@ -63,7 +63,7 @@ namespace KAG.Unity.Gameplay
 
 		private void FixedUpdate()
 		{
-			var input = new Vector2(Input.GetAxisRaw(HorizontalInputAxis), Input.GetAxis(VerticalInputAxis));
+			var input = new Vector2(Input.GetAxisRaw(HorizontalInputAxis), Input.GetAxisRaw(VerticalInputAxis));
 			if (input == Vector2.Zero)
 				return;
 
@@ -80,7 +80,6 @@ namespace KAG.Unity.Gameplay
 			}
 			
 			_movement.Move(input);
-
 			_inputBuffer.Add(new CachedInput(_latestId, input));
 			_latestId++;
 		}
@@ -89,7 +88,7 @@ namespace KAG.Unity.Gameplay
 		{
 			using var message = args.GetMessage();
 			using var reader = message.GetReader();
-			
+
 			switch (args.Tag)
 			{
 				case NetworkTags.PlayerPositionUpdate:
@@ -115,7 +114,7 @@ namespace KAG.Unity.Gameplay
 				_inputBuffer.RemoveAt(i);
 				break;
 			}
-			
+
 			for (var i = 0; i < _inputBuffer.Count; i++)
 				_movement.Move(_inputBuffer[i].Value);
 		}

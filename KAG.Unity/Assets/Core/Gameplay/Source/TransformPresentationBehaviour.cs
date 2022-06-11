@@ -1,23 +1,31 @@
-﻿using KAG.Shared.Transform;
+﻿using KAG.Shared.Gameplay;
+using KAG.Shared.Transform;
 using KAG.Unity.Common.Utilities;
-using KAG.Unity.Simulation;
 using UnityEngine;
-using Zenject;
 
 namespace KAG.Unity.Gameplay
 {
-	public sealed class TransformPresentationBehaviour : MonoBehaviour
+	public sealed class TransformPresentationBehaviour : GameplayBehaviour
 	{
-		private PresentationBehaviour _presentation;
-
-		[Inject]
-		public void Inject(PresentationBehaviour presentation) =>
-			_presentation = presentation;
-
+		private PositionComponent _position;
+		
 		private void OnEnable()
 		{
-			var position = _presentation.Entity.GetComponent<PositionComponent>();
-			transform.position = position.Value.ToUnity();
+			_position = Entity.GetComponent<PositionComponent>();
+			transform.position = _position.Value.ToUnity();
+		}
+
+		private void Update()
+		{
+			if (Entity.TryGetComponent(out MovementComponent movement))
+			{
+				var maxDistanceDelta = movement.Speed * Time.deltaTime;
+				transform.position = Vector3.MoveTowards(transform.position, _position.Value.ToUnity(), maxDistanceDelta);
+			}
+			else
+			{
+				transform.position = _position.Value.ToUnity();
+			}
 		}
 	}
 }

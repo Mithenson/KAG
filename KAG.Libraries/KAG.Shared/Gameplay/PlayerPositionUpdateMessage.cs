@@ -5,6 +5,7 @@ namespace KAG.Shared.Gameplay
 {
 	public struct PlayerPositionUpdateMessage : IDarkRiftSerializable
 	{
+		public ushort ClientId { get; set; }
 		public ushort Id { get; set; }
 		public Vector2 Position { get; set; }
 		

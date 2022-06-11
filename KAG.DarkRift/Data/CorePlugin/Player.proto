@@ -6,6 +6,10 @@
     },
     {
       "$type": "KAG.Shared.Network.PlayerComponent, KAG.Shared"
+    },
+    {
+      "$type": "KAG.Shared.Gameplay.MovementComponent, KAG.Shared",
+	  "Speed": 3.25
     }
   ]
 }

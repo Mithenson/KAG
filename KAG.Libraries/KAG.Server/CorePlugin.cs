@@ -7,6 +7,7 @@ using DarkRift;
 using DarkRift.Server;
 using KAG.Server.Pools;
 using KAG.Shared;
+using KAG.Shared.Gameplay;
 using KAG.Shared.Json;
 using KAG.Shared.Network;
 using KAG.Shared.Prototype;
@@ -132,6 +133,40 @@ namespace KAG.Server
 				case NetworkTags.PlayerIdentification:
 					OnPlayerIdentification(args.Client, message);
 					break;
+
+				case NetworkTags.PlayerMovement:
+				{
+					using (var reader = message.GetReader())
+					{
+						var movementMessage = reader.ReadSerializable<PlayerMovementMessage>();
+						
+						var player = _connectedPlayers[args.Client];
+						var movement = player.Entity.GetComponent<MovementComponent>();
+						
+						movement.Move(movementMessage.Input, out var updatedPosition);
+
+						using (var writer = DarkRiftWriter.Create())
+						{
+							writer.Write(new PlayerPositionUpdateMessage()
+							{
+								ClientId = args.Client.ID,
+								Id = movementMessage.Id,
+								Position = updatedPosition
+							});
+
+							using (var messageToSend = Message.Create(NetworkTags.PlayerPositionUpdate, writer))
+								args.Client.SendMessage(messageToSend, SendMode.Unreliable);
+							
+							using (var messageToSend = Message.Create(NetworkTags.RemotePlayerPositionUpdate, writer))
+							{
+								foreach (var client in ClientManager.GetAllClients().Where(client => client != args.Client))
+									client.SendMessage(messageToSend, SendMode.Unreliable);
+							}
+						}
+					}
+
+					break;
+				}
 			}
 		}
 

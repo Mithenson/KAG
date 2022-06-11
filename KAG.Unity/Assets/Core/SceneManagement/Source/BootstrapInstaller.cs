@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cinemachine;
 using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Shared.Json;
@@ -27,6 +28,9 @@ namespace KAG.Unity.SceneManagement
         #endregion
 
         private const int DelayBeforeLobbyLoadInMilliseconds = 250;
+
+        [SerializeField]
+        private CinemachineVirtualCamera _virtualCamera;
         
         [SerializeField]
         private Mode _mode;
@@ -58,6 +62,8 @@ namespace KAG.Unity.SceneManagement
 
         public override void InstallBindings()
         {
+            Container.BindInstance(_virtualCamera).AsSingle();
+            
             PersistentMVVMInstaller.Install(Container);
             SimulationFoundationInstaller.Install(Container);
             
