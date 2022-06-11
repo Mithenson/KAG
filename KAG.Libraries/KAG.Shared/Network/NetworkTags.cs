@@ -6,5 +6,7 @@ namespace KAG.Shared.Network
 		public const ushort PlayerCatchup = 1;
 		public const ushort PlayerArrival = 2;
 		public const ushort PlayerDeparture = 3;
+		public const ushort PlayerMovement = 4;
+		public const ushort PlayerPositionUpdate = 5;
 	}
 }

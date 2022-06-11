@@ -4,14 +4,23 @@ using KAG.Unity.Common;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEngine;
 
 namespace KAG.Unity.Global.Editor
 {
 	public sealed class CorePostProcessor : AssetPostprocessor
 	{
+		private const string CommonAddressableGroupName = "Common";
+		
 		private static void OnPostprocessAllAssets(string[] importedAssetPaths, string[] deletedAssetPaths, string[] movedAssetPaths, string[] movedFromAssetPaths)
 		{
-			var commonGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup("Common");
+			if (AddressableAssetSettingsDefaultObject.Settings == null)
+			{
+				Debug.LogWarning("Asset post processing can't be done without being able to access the addressables.");
+				return;
+			}
+			
+			var commonGroup = AddressableAssetSettingsDefaultObject.Settings.FindGroup(CommonAddressableGroupName);
 			var needAdditionalSave = false;
 			
 			foreach (var importedAssetPath in importedAssetPaths)

@@ -20,6 +20,9 @@ namespace KAG.Unity.Simulation
 			_presentationHandles = new Dictionary<Entity, PresentationHandle>();
 		}
 
+		public PresentationHandle GetPresentationHandle(Entity entity) => 
+			_presentationHandles[entity];
+
 		protected override void OnEntityCreated(Entity entity)
 		{
 			if (!entity.TryGetComponent(out IdentityComponent identity)

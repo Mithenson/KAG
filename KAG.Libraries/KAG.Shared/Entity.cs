@@ -48,18 +48,21 @@ namespace KAG.Shared
 			
 			IMP_AddComponent(component);
 		}
-		internal void BYPASS_AddComponent(Component component) =>
-			_components.Add(component.GetType(), component);
 		private void IMP_AddComponent(Component component)
 		{
 			var type = component.GetType();
 			if (_components.ContainsKey(type))
 				throw new InvalidOperationException($"The `{nameof(Entity)}={this.ToShortString()}` already has a component of `{nameof(type)}={type}`.");
 
-			_components.Add(type, component);
-			
-			component.Owner = this;
+			BYPASS_AddComponent(type, component);
 			component.OnAddedToEntity();
+		}
+		internal void BYPASS_AddComponent(Component component) => 
+			BYPASS_AddComponent(component.GetType(), component);
+		internal void BYPASS_AddComponent(Type type, Component component)
+		{
+			_components.Add(type, component);
+			component.Owner = this;
 		}
 
 		public bool HasComponent<TComponent>() where TComponent : Component => 
@@ -317,6 +320,8 @@ namespace KAG.Shared
 		}
 		void IDarkRiftSerializable.Deserialize(DeserializeEvent evt)
 		{
+			var addedComponents = new List<Component>();
+			
 			var count = evt.Reader.ReadUInt16();
 			for (var i = 0; i < count; i++)
 			{
@@ -324,11 +329,16 @@ namespace KAG.Shared
 				if (!IMP_UNCHECKED_TryGetComponent(componentType, out var component))
 				{
 					component = _componentPool.Acquire(componentType);
-					AddComponent(component);
+					BYPASS_AddComponent(component);
+					
+					addedComponents.Add(component);
 				}
 				
 				evt.Reader.ReadSerializableInto(ref component);
 			}
+
+			foreach (var addedComponent in addedComponents)
+				addedComponent.OnAddedToEntity();
 		}
 
 		public string ToShortString() => 

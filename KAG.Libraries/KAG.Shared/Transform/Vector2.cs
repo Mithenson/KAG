@@ -17,6 +17,14 @@ namespace KAG.Shared.Transform
 
 		public float SqrMagnitude => (float)Math.Sqrt(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
 		public float Magnitude => (float)(Math.Pow(X, 2.0d) + Math.Pow(Y, 2.0d));
+		public Vector2 Normalized
+		{
+			get
+			{
+				var magnitude = Magnitude;
+				return magnitude > Epsilon ? this / magnitude : Zero;
+			}
+		}
 		
 		public float X;
 		public float Y;

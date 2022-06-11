@@ -2,7 +2,7 @@
 
 namespace KAG.Shared.Network
 {
-	public sealed class PlayerDepartureMessage : IDarkRiftSerializable
+	public struct PlayerDepartureMessage : IDarkRiftSerializable
 	{
 		public ushort Id { get; set; }
 		

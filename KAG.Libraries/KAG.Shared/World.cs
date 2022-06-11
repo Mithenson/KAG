@@ -101,6 +101,8 @@ namespace KAG.Shared
 			reader.ReadUInt16(); // Discard the id
 			reader.ReadSerializableInto(ref clone);
 
+			
+			
 			OnEntityCreated(clone);
 			return clone;
 		}
