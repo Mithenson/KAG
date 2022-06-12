@@ -1,5 +1,6 @@
 ﻿using KAG.Unity.Common;
 using KAG.Unity.Network.Models;
+using UnityEngine;
 
 namespace KAG.Unity.UI.ViewModels
 {
@@ -19,12 +20,27 @@ namespace KAG.Unity.UI.ViewModels
 		}
 		private string _automaticExitDueToDisconnectionText;
 
+		public string PingText
+		{
+			get => _pingText;
+			set => ChangeProperty(ref _pingText, value);
+		}
+		private string _pingText;
+
+		public Color PingColor
+		{
+			get => _pingColor;
+			set => ChangeProperty(ref _pingColor, value);
+		}
+		private Color _pingColor;
+
 		public ConnectivityViewModel(ConnectivityModel model)
 			: base(model)
 		{
 			AddMethodBinding(nameof(ConnectivityModel.GotDisconnected), nameof(OnGotDisconnectedChanged));
 			AddMethodBinding(nameof(ConnectivityModel.IsLeavingDueToDisconnection), nameof(OnIsLeavingDueToDisconnectionChanged));
 			AddMethodBinding(nameof(ConnectivityModel.SecondsLeftUntilAutomaticExit), nameof(OnSecondLeftUntilAutomaticExitChanged));
+			AddMethodBinding(nameof(ConnectivityModel.Ping), nameof(OnPingChanged));
 		}
 
 		public void OnGotDisconnectedChanged(bool gotDisconnected)
@@ -44,5 +60,19 @@ namespace KAG.Unity.UI.ViewModels
 
 		public void OnSecondLeftUntilAutomaticExitChanged(int secondsLeft) =>
 			AutomaticExitDueToDisconnectionText = $"Exiting automatically in {secondsLeft}s...";
+
+		public void OnPingChanged(int ping)
+		{
+			PingText = $"{ping:000}ms";
+
+			for (var i = 0; i < Constants.Network.PingData.Length; i++)
+			{
+				if (ping > Constants.Network.PingData[i].Treshold)
+					continue;
+
+				PingColor = Constants.Network.PingData[i].Color;
+				break;
+			}
+		}
 	}
 }

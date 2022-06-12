@@ -8,5 +8,6 @@ namespace KAG.Shared.Network
 		public const ushort PlayerDeparture = 3;
 		public const ushort PlayerMovement = 4;
 		public const ushort PlayerPositionUpdate = 5;
+		public const ushort PingComputation = 6;
 	}
 }

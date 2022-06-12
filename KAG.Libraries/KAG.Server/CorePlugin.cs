@@ -106,6 +106,10 @@ namespace KAG.Server
 				case NetworkTags.PlayerIdentification:
 					OnPlayerIdentification(sender, args);
 					return;
+				
+				case NetworkTags.PingComputation:
+					OnPingComputation(sender, args);
+					return;
 			}
 			
 			_messageDispatcher.Dispatch(sender, args);
@@ -154,6 +158,21 @@ namespace KAG.Server
 			using var message = Message.Create(NetworkTags.PlayerArrival, writer);
 			foreach (var client in ClientManager.GetAllClients().Where(client => client != joiningPlayer.Client))
 				client.SendMessage(message, SendMode.Reliable);
+		}
+
+		private void OnPingComputation(object sender, MessageReceivedEventArgs args)
+		{
+			using var message = args.GetMessage();
+			if (!message.IsPingMessage)
+				return;
+
+			using var writer = DarkRiftWriter.Create();
+			writer.WriteRaw(Array.Empty<byte>(), 0, 0);
+
+			using var response = Message.Create(NetworkTags.PingComputation, writer);
+
+			response.MakePingAcknowledgementMessage(message);
+			args.Client.SendMessage(response, SendMode.Unreliable);
 		}
 
 		private void OnClientDisconnected(object sender, ClientDisconnectedEventArgs args)
