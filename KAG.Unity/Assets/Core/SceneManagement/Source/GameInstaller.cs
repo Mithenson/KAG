@@ -25,10 +25,9 @@ namespace KAG.Unity.SceneManagement
 		public override void InstallBindings()
 		{
 			SimulationInstaller.Install(Container, _componentTypeRepository);
+			NetworkInstaller.Install(Container);
 			
 			Container.BindInterfacesAndSelfTo<LeaveMatchViewModel>().AsSingle();
-
-			Container.BindInterfacesAndSelfTo<NetworkManager>().AsSingle();
 
 			for (var i = 0; i < SceneManager.sceneCount; i++)
 			{

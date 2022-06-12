@@ -11,11 +11,13 @@ namespace KAG.Shared.Gameplay
 		
 		public void Serialize(SerializeEvent evt)
 		{
+			evt.Writer.Write(ClientId);
 			evt.Writer.Write(Id);
 			evt.Writer.Write(Position);
 		}
 		public void Deserialize(DeserializeEvent evt)
 		{
+			ClientId = evt.Reader.ReadUInt16();
 			Id = evt.Reader.ReadUInt16();
 			Position = evt.Reader.ReadSerializable<Vector2>();
 		}

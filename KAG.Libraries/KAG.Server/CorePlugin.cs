@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Autofac;
 using DarkRift;
 using DarkRift.Server;
-using KAG.Server.Pools;
+using KAG.Server.DependencyInjection;
+using KAG.Server.Network;
 using KAG.Shared;
-using KAG.Shared.Gameplay;
-using KAG.Shared.Json;
 using KAG.Shared.Network;
 using KAG.Shared.Prototype;
 using KAG.Shared.Transform;
-using Newtonsoft.Json;
 
 namespace KAG.Server
 {
@@ -20,14 +17,21 @@ namespace KAG.Server
 	{
 		private const int MaxPlayers = 12;
 		
-		public override Version Version => new Version(1, 0, 0);
-		public override bool ThreadSafe => false;
+		public override Version Version => 
+			new Version(1, 0, 0);
+		
+		public override bool ThreadSafe => 
+			false;
+		
+		public IReadOnlyDictionary<IClient, Player> ConnectedPlayers => 
+			_connectedPlayers;
 
 		private readonly HashSet<IClient> _clientsOnStandby;
 		private readonly Dictionary<IClient, Player> _connectedPlayers;
 		private readonly IMultiplayerSDKProxy _multiplayerSdkProxy;
 		private readonly IContainer _container;
 		private readonly ILifetimeScope _lifetimeScope;
+		private readonly ServerMessageDispatcher _messageDispatcher;
 		private readonly World _world;
 		
 		public CorePlugin(PluginLoadData pluginLoadData) : base(pluginLoadData)
@@ -41,6 +45,7 @@ namespace KAG.Server
 				return;
 			
 			_lifetimeScope = _container.BeginLifetimeScope();
+			_messageDispatcher = _lifetimeScope.Resolve<ServerMessageDispatcher>();
 			_world = _lifetimeScope.Resolve<World>();
 
 			ClientManager.ClientConnected += OnClientConnected;
@@ -70,7 +75,11 @@ namespace KAG.Server
 
 			try
 			{
-				RegisterSimulationDependencies(builder);
+				builder.RegisterInstance(this).SingleInstance();
+				builder.RegisterInstance(Logger).SingleInstance();
+				
+				NetworkInstaller.Install(builder);
+				SimulationInstaller.Install(builder, ResourceDirectory);
 			}
 			catch (Exception exception)
 			{
@@ -83,41 +92,6 @@ namespace KAG.Server
 			container = builder.Build();
 			return true;
 		}
-		
-		private void RegisterSimulationDependencies(ContainerBuilder builder)
-		{
-			var componentTypeRepository = new ComponentTypeRepository();
-			builder.RegisterInstance(componentTypeRepository).SingleInstance();
-			
-			RegisterPrototypeRepository(builder, componentTypeRepository);
-
-			builder.RegisterType<World>().AsSelf().SingleInstance();
-
-			builder.RegisterType<EntityPool>().As<IEntityPool>().SingleInstance();
-			builder.RegisterType(typeof(Entity)).AsSelf().InstancePerDependency();
-
-			builder.RegisterType<ComponentPool>().As<IComponentPool>().SingleInstance();
-
-			foreach (var componentType in componentTypeRepository.ComponentTypes)
-				builder.RegisterType(componentType).AsSelf().InstancePerDependency();
-		}
-		private void RegisterPrototypeRepository(ContainerBuilder builder, ComponentTypeRepository componentTypeRepository)
-		{
-			var prototypeDefinitionPaths = Directory.GetFiles(ResourceDirectory, "*.proto");
-			var prototypes = new List<Prototype>(prototypeDefinitionPaths.Length);
-
-			for (var i = 0; i < prototypeDefinitionPaths.Length; i++)
-			{
-				var prototypeDefinition = File.ReadAllText(prototypeDefinitionPaths[i]);
-				var prototype = JsonConvert.DeserializeObject<Prototype>(prototypeDefinition, JsonUtilities.StandardSerializerSettings);
-				prototypes.Add(prototype);
-			}
-
-			var prototypeRepository = new PrototypeRepository();
-			prototypeRepository.Initialize(prototypes, componentTypeRepository);
-			
-			builder.RegisterInstance(prototypeRepository).SingleInstance();
-		}
 
 		private void OnClientConnected(object sender, ClientConnectedEventArgs args)
 		{
@@ -127,52 +101,21 @@ namespace KAG.Server
 
 		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
 		{
-			using var message = args.GetMessage();
-			switch (message.Tag)
+			switch (args.Tag)
 			{
 				case NetworkTags.PlayerIdentification:
-					OnPlayerIdentification(args.Client, message);
-					break;
-
-				case NetworkTags.PlayerMovement:
-				{
-					using (var reader = message.GetReader())
-					{
-						var movementMessage = reader.ReadSerializable<PlayerMovementMessage>();
-						
-						var player = _connectedPlayers[args.Client];
-						var movement = player.Entity.GetComponent<MovementComponent>();
-						
-						movement.Move(movementMessage.Input, out var updatedPosition);
-
-						using (var writer = DarkRiftWriter.Create())
-						{
-							writer.Write(new PlayerPositionUpdateMessage()
-							{
-								ClientId = args.Client.ID,
-								Id = movementMessage.Id,
-								Position = updatedPosition
-							});
-
-							using (var messageToSend = Message.Create(NetworkTags.PlayerPositionUpdate, writer))
-								args.Client.SendMessage(messageToSend, SendMode.Unreliable);
-							
-							using (var messageToSend = Message.Create(NetworkTags.RemotePlayerPositionUpdate, writer))
-							{
-								foreach (var client in ClientManager.GetAllClients().Where(client => client != args.Client))
-									client.SendMessage(messageToSend, SendMode.Unreliable);
-							}
-						}
-					}
-
-					break;
-				}
+					OnPlayerIdentification(sender, args);
+					return;
 			}
+			
+			_messageDispatcher.Dispatch(sender, args);
 		}
 
-		private void OnPlayerIdentification(IClient client, Message message)
+		private void OnPlayerIdentification(object sender, MessageReceivedEventArgs args)
 		{
+			using var message = args.GetMessage();
 			using var reader = message.GetReader();
+			
 			var identificationMessage = reader.ReadSerializable<PlayerIdentificationMessage>();
 							
 			// Create player
@@ -180,14 +123,14 @@ namespace KAG.Server
 			var component = playerEntity.GetComponent<PlayerComponent>();
 			var position = playerEntity.GetComponent<PositionComponent>();
 
-			component.Id = client.ID;
+			component.Id = args.Client.ID;
 			component.Name = identificationMessage.Name;
 			
 			var random = new Random();
 			position.Value = new Vector2(random.Next(-20, 20), random.Next(-20, 20));
 
-			var player = new Player(client, identificationMessage.Name, playerEntity);
-			_connectedPlayers.Add(client, player);
+			var player = new Player(args.Client, identificationMessage.Name, playerEntity);
+			_connectedPlayers.Add(args.Client, player);
 
 			SendPlayerArrivalMessage(player);
 			SendPlayerCatchupMessage(player);

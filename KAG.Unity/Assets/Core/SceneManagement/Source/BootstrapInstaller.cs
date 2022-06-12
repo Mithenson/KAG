@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Cinemachine;
 using DarkRift.Client.Unity;
 using KAG.Shared;
+using KAG.Shared.Events;
 using KAG.Shared.Json;
 using KAG.Shared.Prototype;
 using KAG.Unity.Common;
@@ -63,6 +64,7 @@ namespace KAG.Unity.SceneManagement
         public override void InstallBindings()
         {
             Container.BindInstance(_virtualCamera).AsSingle();
+            Container.Bind<EventHub>().ToSelf().AsSingle();
             
             PersistentMVVMInstaller.Install(Container);
             SimulationFoundationInstaller.Install(Container);

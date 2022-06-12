@@ -1,7 +1,7 @@
 using DarkRift.Server;
 using KAG.Shared;
 
-namespace KAG.Server
+namespace KAG.Server.Network
 {
 	public sealed class Player
 	{

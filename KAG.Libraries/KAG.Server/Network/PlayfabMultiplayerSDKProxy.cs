@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Playfab.Gaming.GSDK.CSharp;
 
-namespace KAG.Server
+namespace KAG.Server.Network
 {
 	public class PlayfabMultiplayerSDKProxy : IMultiplayerSDKProxy
 	{

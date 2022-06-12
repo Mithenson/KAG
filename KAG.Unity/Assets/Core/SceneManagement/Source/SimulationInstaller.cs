@@ -1,6 +1,5 @@
 ﻿using System;
 using KAG.Shared;
-using KAG.Unity.Network;
 using KAG.Unity.Simulation;
 using Zenject;
 

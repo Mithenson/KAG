@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DarkRift;
 using DarkRift.Client;
 using DarkRift.Client.Unity;
@@ -54,12 +55,7 @@ namespace KAG.Unity.Gameplay
 			
 			_inputBuffer.Clear();
 			_latestId = 0;
-
-			_client.MessageReceived += OnClientMessageReceived;
 		}
-
-		private void OnDisable() =>
-			_client.MessageReceived -= OnClientMessageReceived;
 
 		private void FixedUpdate()
 		{
@@ -84,20 +80,7 @@ namespace KAG.Unity.Gameplay
 			_latestId++;
 		}
 
-		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
-		{
-			using var message = args.GetMessage();
-			using var reader = message.GetReader();
-
-			switch (args.Tag)
-			{
-				case NetworkTags.PlayerPositionUpdate:
-					Reconcile(reader.ReadSerializable<PlayerPositionUpdateMessage>());
-					break;
-			}
-		}
-
-		private void Reconcile(PlayerPositionUpdateMessage message)
+		public void Reconcile(PlayerPositionUpdateMessage message)
 		{
 			_position.Value = message.Position;
 			
