@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using DarkRift;
-using DarkRift.Client;
 using DarkRift.Client.Unity;
 using KAG.Shared.Gameplay;
 using KAG.Shared.Network;
 using KAG.Shared.Transform;
-using UnityEngine;
+using KAG.Unity.Common;
+using KAG.Unity.Common.Utilities;
+using UnityEngine.InputSystem;
 using Zenject;
 
 using Vector2 = KAG.Shared.Transform.Vector2;
@@ -33,17 +33,23 @@ namespace KAG.Unity.Gameplay
 
 		private const string HorizontalInputAxis = "Horizontal";
 		private const string VerticalInputAxis = "Vertical";
-
+		
 		private UnityClient _client;
-
+		private InputAction _moveAction;
+		
 		private MovementComponent _movement;
 		private PositionComponent _position;
 		private List<CachedInput> _inputBuffer;
 		private ushort _latestId;
 
 		[Inject]
-		public void Inject(UnityClient client) => 
+		public void Inject(
+			UnityClient client,
+			[Inject(Id = Constants.Inputs.MoveAction)] InputAction moveAction)
+		{
 			_client = client;
+			_moveAction = moveAction;
+		}
 
 		private void Awake() => 
 			_inputBuffer = new List<CachedInput>();
@@ -56,10 +62,10 @@ namespace KAG.Unity.Gameplay
 			_inputBuffer.Clear();
 			_latestId = 0;
 		}
-
+		
 		private void FixedUpdate()
 		{
-			var input = new Vector2(Input.GetAxisRaw(HorizontalInputAxis), Input.GetAxisRaw(VerticalInputAxis));
+			var input = _moveAction.ReadValue<UnityEngine.Vector2>().ToShared();
 			if (input == Vector2.Zero)
 				return;
 

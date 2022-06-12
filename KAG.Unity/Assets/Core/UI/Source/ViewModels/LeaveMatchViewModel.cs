@@ -1,5 +1,8 @@
-﻿using KAG.Unity.Common.Observables;
+﻿using KAG.Unity.Common;
+using KAG.Unity.Common.Observables;
 using KAG.Unity.Network;
+using UnityEngine.InputSystem;
+using Zenject;
 
 namespace KAG.Unity.UI.ViewModels
 {

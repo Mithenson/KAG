@@ -3,11 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 namespace KAG.Unity.Common.Models
 {
-	public class ApplicationModel : Observable
+	public sealed class ApplicationModel : Observable
 	{
 		private const int PollingIntervalInMilliseconds = 500;
 		private const int DelayBeforeLoadingStartInMilliseconds = 1_000;
@@ -40,13 +42,12 @@ namespace KAG.Unity.Common.Models
 			set => ChangeProperty(ref _gameStatus, value);
 		}
 		private GameStatus _gameStatus;
-
+		
 		private List<float> _loadingProgresses;
 
 		public ApplicationModel()
 		{
 			_isLoading = true;
-
 			_loadingProgresses = new List<float>(2);
 		}
 

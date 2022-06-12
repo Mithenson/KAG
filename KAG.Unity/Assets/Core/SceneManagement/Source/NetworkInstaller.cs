@@ -12,7 +12,7 @@ namespace KAG.Unity.SceneManagement
 	{
 		public override void InstallBindings()
 		{
-			Container.BindInterfacesAndSelfTo<NetworkManager>().AsSingle();
+			Container.Bind(typeof(NetworkManager), typeof(ILateDisposable)).To<NetworkManager>().AsSingle();
 			
 			Container.BindInterfacesAndSelfTo<UnityMessageDispatcher>().AsSingle();
 			InstallMessageHandlers();
@@ -30,8 +30,6 @@ namespace KAG.Unity.SceneManagement
 
 			foreach (var handlerType in handlerTypes)
 				Container.BindInterfacesAndSelfTo(handlerType).AsSingle();
-			
-			//Container.Bind<IMessageHandler>().To(handlerTypes).AsSingle();
 		}
 	}
 }

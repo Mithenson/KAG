@@ -5,14 +5,20 @@ using DarkRift.Client.Unity;
 using KAG.Shared;
 using KAG.Shared.Events;
 using KAG.Shared.Network;
+using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
+using KAG.Unity.Network.Models;
 using KAG.Unity.Simulation;
+using UnityEngine;
+using UnityEngine.InputSystem;
 using Zenject;
 
 namespace KAG.Unity.Network
 {
-	public sealed class NetworkManager : ILateDisposable
+	public sealed class NetworkManager : ITickable, ILateDisposable
 	{
+		private const int SecondsBeforeAutomaticExit = 10;
+		
 		public Player LocalPlayer => 
 			_localPlayer;
 		public IReadOnlyList<Player> Players =>
@@ -23,10 +29,14 @@ namespace KAG.Unity.Network
 		private readonly UnityWorld _world;
 		private readonly EventHub _eventHub;
 		private readonly ApplicationModel _applicationModel;
+		private readonly ConnectivityModel _connectivityModel;
 		private readonly PlayerModel _playerModel;
+		private readonly TickableManager _tickableManager;
+		private readonly InputActionMap _gameplayInputs;
 
 		private Player _localPlayer;
 		private List<Player> _players;
+		private float _disconnectionTimestamp;
 		
 		public NetworkManager( 
 			UnityClient client, 
@@ -34,27 +44,83 @@ namespace KAG.Unity.Network
 			UnityWorld world,
 			EventHub eventHub,
 			ApplicationModel applicationModel, 
-			PlayerModel playerModel)
+			ConnectivityModel connectivityModel,
+			PlayerModel playerModel,
+			TickableManager tickableManager,
+			[Inject(Id = Constants.Inputs.GameplayMap)] InputActionMap gameplayInputs)
 		{
 			_client = client;
 			_messageDispatcher = messageDispatcher;
 			_world = world;
 			_eventHub = eventHub;
 			_applicationModel = applicationModel;
+			_connectivityModel = connectivityModel;
 			_playerModel = playerModel;
-			
+			_tickableManager = tickableManager;
+			_gameplayInputs = gameplayInputs;
+
 			_players = new List<Player>();
+			_disconnectionTimestamp = -1.0f;
 			
 			_eventHub.Define<PlayerArrivalEventArgs>(SharedEventKey.PlayerArrival);
 			_eventHub.Define<PlayerDepartureEventArgs>(SharedEventKey.PlayerDeparture);
 		}
 
+		#region Flow
+
 		public void Start()
 		{
 			_client.MessageReceived += OnClientMessageReceived;
+			_client.Disconnected += OnDisconnection;
+			
 			SendPlayerIdentificationMessage(_playerModel.Name);
 		}
 		
+		public void LeaveMatch()
+		{
+			if (_client.ConnectionState == ConnectionState.Connected)
+			{
+				Stop();
+				_client.Disconnect();
+			}
+
+			if (_disconnectionTimestamp > 0.0f)
+				AcknowledgeExitDueToDisconnection();
+			
+			_applicationModel.GoBackToLobby();
+		}
+		
+		private void OnDisconnection(object sender, DisconnectedEventArgs args)
+		{
+			Stop();
+			
+			if (args.LocalDisconnect)
+				return;
+
+			_disconnectionTimestamp = Time.unscaledTime;
+			_connectivityModel.GotDisconnected = true;
+			_tickableManager.Add(this);
+		}
+
+		private void AcknowledgeExitDueToDisconnection()
+		{
+			_connectivityModel.IsLeavingDueToDisconnection = true;
+			_tickableManager.Remove(this);
+			_disconnectionTimestamp = -1.0f;
+		}
+
+		private void Stop()
+		{
+			_gameplayInputs.Disable();
+				
+			_client.MessageReceived -= OnClientMessageReceived;
+			_client.Disconnected -= OnDisconnection;
+		}
+
+		#endregion
+
+		#region Messaging
+
 		private void SendPlayerIdentificationMessage(string playerName)
 		{
 			using var writer = DarkRiftWriter.Create();
@@ -66,15 +132,7 @@ namespace KAG.Unity.Network
 			using var message = Message.Create(NetworkTags.PlayerIdentification, writer);
 			_client.SendMessage(message, SendMode.Reliable);
 		}
-
-		public void LeaveMatch()
-		{
-			_client.MessageReceived -= OnClientMessageReceived;
-			_client.Disconnect();
-
-			_applicationModel.GoBackToLobby();
-		}
-
+		
 		private void OnClientMessageReceived(object sender, MessageReceivedEventArgs args)
 		{
 			switch (args.Tag)
@@ -138,7 +196,7 @@ namespace KAG.Unity.Network
 			foreach (var entity in _world.Entities)
 			{
 				if (!entity.TryGetComponent(out PlayerComponent playerComponent)
-					|| playerComponent.Id != clientId)
+				    || playerComponent.Id != clientId)
 					continue;
 
 				associatedEntity = entity;
@@ -160,6 +218,19 @@ namespace KAG.Unity.Network
 		{
 			_players.Add(player);
 			_eventHub.Invoke(SharedEventKey.PlayerArrival, this, new PlayerArrivalEventArgs(player));
+		}
+
+		#endregion
+
+		void ITickable.Tick()
+		{
+			var elapsedTime = Time.unscaledTime - _disconnectionTimestamp;
+			_connectivityModel.SecondsLeftUntilAutomaticExit = SecondsBeforeAutomaticExit - Mathf.RoundToInt(elapsedTime);
+
+			if (_connectivityModel.SecondsLeftUntilAutomaticExit > 0)
+				return;
+
+			LeaveMatch();
 		}
 
 		void ILateDisposable.LateDispose()

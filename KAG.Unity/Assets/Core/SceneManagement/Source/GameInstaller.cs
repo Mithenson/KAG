@@ -1,14 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using KAG.Shared;
 using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
+using KAG.Unity.Network.Models;
 using KAG.Unity.Simulation;
 using KAG.Unity.UI.ViewModels;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Zenject;
+
+using Object = UnityEngine.Object;
 
 namespace KAG.Unity.SceneManagement
 {
@@ -27,6 +32,9 @@ namespace KAG.Unity.SceneManagement
 			SimulationInstaller.Install(Container, _componentTypeRepository);
 			NetworkInstaller.Install(Container);
 			
+			Container.BindInterfacesAndSelfTo<ConnectivityModel>().AsSingle();
+			Container.BindInterfacesAndSelfTo<ConnectivityViewModel>().AsSingle();
+				
 			Container.BindInterfacesAndSelfTo<LeaveMatchViewModel>().AsSingle();
 
 			for (var i = 0; i < SceneManager.sceneCount; i++)
@@ -54,6 +62,9 @@ namespace KAG.Unity.SceneManagement
 
 			var networkManager = Container.Resolve<NetworkManager>();
 			networkManager.Start();
+			
+			var gameplayInputs = Container.ResolveId<InputActionMap>(Constants.Inputs.GameplayMap);
+			gameplayInputs.Enable();
 
 			var applicationModel = Container.Resolve<ApplicationModel>();
 			applicationModel.IsLoading = false;
@@ -82,7 +93,7 @@ namespace KAG.Unity.SceneManagement
 				presentationLinker.Initialize(Container);
 				presentationLinkers.Add(presentationLinker);
 			}
-
+			
 			var world = Container.Resolve<UnityWorld>();
 			world.Initialize(presentationLinkers);
 		}

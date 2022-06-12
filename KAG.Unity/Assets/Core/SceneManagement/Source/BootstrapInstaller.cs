@@ -12,6 +12,7 @@ using KAG.Unity.Network;
 using Newtonsoft.Json;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace KAG.Unity.SceneManagement
 {
@@ -31,34 +32,45 @@ namespace KAG.Unity.SceneManagement
         private const int DelayBeforeLobbyLoadInMilliseconds = 250;
 
         [SerializeField]
+        [FoldoutGroup("General dependencies")]
         private CinemachineVirtualCamera _virtualCamera;
+
+        [SerializeField]
+        [FoldoutGroup("General dependencies")]
+        private InputActionAsset _inputs;
         
         [SerializeField]
+        [FoldoutGroup("Network settings")]
         private Mode _mode;
         
         [SerializeField]
         [ShowIf(nameof(_mode), Mode.LocalServer)]
         [LabelText("Socket provider")]
+        [FoldoutGroup("Network settings")]
         private LocalMatchProvider _localServerNetworkProvider;
 
         [SerializeField]
         [ShowIf(nameof(_mode), Mode.LocalServer)]
         [LabelText("Process")]
+        [FoldoutGroup("Network settings")]
         private LocalConsoleServerProcess _localServerProcess;
         
         [SerializeField]
         [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
         [LabelText("Process")]
+        [FoldoutGroup("Network settings")]
         private LocalMatchProvider _localServerViaDockerNetworkProvider;
         
         [SerializeField]
         [LabelText("Socket provider")]
         [ShowIf(nameof(_mode), Mode.LocalServerViaDocker)]
+        [FoldoutGroup("Network settings")]
         private LocalConsoleServerViaDockerProcess _localServerViaDockerProcess;
         
         [SerializeField]
         [LabelText("Socket provider")]
         [ShowIf(nameof(_mode), Mode.PlayFab)]
+        [FoldoutGroup("Network settings")]
         private PlayFabMatchProvider _playfabNetworkProvider;
 
         public override void InstallBindings()
@@ -66,6 +78,7 @@ namespace KAG.Unity.SceneManagement
             Container.BindInstance(_virtualCamera).AsSingle();
             Container.Bind<EventHub>().ToSelf().AsSingle();
             
+            InputInstaller.Install(Container, _inputs);
             PersistentMVVMInstaller.Install(Container);
             SimulationFoundationInstaller.Install(Container);
             

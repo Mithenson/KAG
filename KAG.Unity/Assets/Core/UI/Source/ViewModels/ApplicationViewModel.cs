@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KAG.Unity.UI.ViewModels
 {
-	public class ApplicationViewModel : ViewModel<ApplicationModel>
+	public sealed class ApplicationViewModel : ViewModel<ApplicationModel>
 	{
 		public bool IsInLobby
 		{
@@ -55,7 +55,8 @@ namespace KAG.Unity.UI.ViewModels
 		}
 		private string _loadingText;
 
-		public ApplicationViewModel(ApplicationModel model) : base(model)
+		public ApplicationViewModel(ApplicationModel model)
+			: base(model)
 		{
 			AddMethodBinding(nameof(ApplicationModel.GameStatus), nameof(OnGameStatusChanged));
 			AddPropertyBinding(nameof(ApplicationModel.IsLoading), nameof(IsLoading));

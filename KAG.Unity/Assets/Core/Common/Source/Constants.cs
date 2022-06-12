@@ -17,5 +17,12 @@ namespace KAG.Unity.Common
 			public const int LobbySceneIndex = 1;
 			public const int GameSceneIndex = 2;
 		}
+
+		public static class Inputs
+		{
+			public const string GameplayMap = "Gameplay";
+
+			public const string MoveAction = "Gameplay/Move";
+		}
 	}
 }
