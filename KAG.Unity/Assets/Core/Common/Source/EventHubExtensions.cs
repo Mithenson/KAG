@@ -1,7 +1,7 @@
 ﻿using System;
 using KAG.Shared.Events;
 
-namespace KAG.Unity.Common.Observables
+namespace KAG.Unity.Common
 {
 	public static class EventHubExtensions
 	{
