@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public sealed class InputInstaller : Installer<InputActionAsset, InputInstaller>
 	{

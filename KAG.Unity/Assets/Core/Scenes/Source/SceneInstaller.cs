@@ -8,7 +8,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using Zenject;
 using Object = UnityEngine.Object;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public abstract class SceneInstaller : MonoInstaller
 	{

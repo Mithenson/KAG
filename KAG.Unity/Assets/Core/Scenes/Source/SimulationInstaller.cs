@@ -3,7 +3,7 @@ using KAG.Shared;
 using KAG.Unity.Simulation;
 using Zenject;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public sealed class SimulationInstaller : Installer<ComponentTypeRepository, SimulationInstaller>
 	{

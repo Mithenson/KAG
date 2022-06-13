@@ -2,6 +2,7 @@ namespace KAG.Unity.Common
 {
 	public enum EventKey : ushort
 	{
-		SceneTransition
+		OFFSET = 100,
+		SceneTransition = 101
 	}
 }

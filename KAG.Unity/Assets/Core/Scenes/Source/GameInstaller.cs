@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using KAG.Shared;
 using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using KAG.Unity.Network.Models;
+using KAG.Unity.Scenes.Models;
+using KAG.Unity.Scenes.ViewModels;
 using KAG.Unity.Simulation;
 using KAG.Unity.UI.ViewModels;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Zenject;
-
 using Object = UnityEngine.Object;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public class GameInstaller : SceneInstaller
 	{
@@ -36,6 +36,10 @@ namespace KAG.Unity.SceneManagement
 			Container.BindInterfacesAndSelfTo<ConnectivityViewModel>().AsSingle();
 				
 			Container.BindInterfacesAndSelfTo<LeaveMatchViewModel>().AsSingle();
+
+			Container.BindInterfacesAndSelfTo<CursorService>().AsSingle();
+			Container.BindInterfacesAndSelfTo<CursorModel>().AsSingle();
+			Container.BindInterfacesAndSelfTo<CursorViewModel>().AsSingle();
 
 			for (var i = 0; i < SceneManager.sceneCount; i++)
 			{

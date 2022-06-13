@@ -2,7 +2,7 @@
 using KAG.Shared.Prototype;
 using Zenject;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public sealed class SimulationFoundationInstaller : Installer<SimulationFoundationInstaller>
 	{

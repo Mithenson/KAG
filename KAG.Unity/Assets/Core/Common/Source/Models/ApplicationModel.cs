@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KAG.Shared.Events;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -42,19 +43,25 @@ namespace KAG.Unity.Common.Models
 			set => ChangeProperty(ref _gameStatus, value);
 		}
 		private GameStatus _gameStatus;
+
+		private readonly EventHub _eventHub;
 		
 		private List<float> _loadingProgresses;
 
-		public ApplicationModel()
+		public ApplicationModel(EventHub eventHub)
 		{
+			_eventHub = eventHub;
+			
 			_isLoading = true;
 			_loadingProgresses = new List<float>(2);
+			
+			_eventHub.Define<SceneTransitionEventArgs>(EventKey.SceneTransition);
 		}
 
 		public async Task GoInLobby()
 		{
 			LoadingDescription = "Going into lobby";
-			await PrepareLoadingOperation();
+			await PrepareLoadingOperation(GameStatus.InLobby);
 			
 			var operation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
 			await WaitForLoadOperation(operation);
@@ -63,7 +70,7 @@ namespace KAG.Unity.Common.Models
 		public async Task GoInGame()
 		{
 			LoadingDescription = "Going into game";
-			await PrepareLoadingOperation();
+			await PrepareLoadingOperation(GameStatus.InGame);
 			
 			var loadOperation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.GameSceneIndex, LoadSceneMode.Additive);
 			var unloadOperation =  SceneManager.UnloadSceneAsync(UnityConstants.Scenes.LobbySceneIndex);
@@ -73,7 +80,7 @@ namespace KAG.Unity.Common.Models
 		public async Task GoBackToLobby()
 		{
 			LoadingDescription = "Going back to lobby";
-			await PrepareLoadingOperation();
+			await PrepareLoadingOperation(GameStatus.InLobby);
 			
 			var loadOperation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
 			var unloadOperation =  SceneManager.UnloadSceneAsync(UnityConstants.Scenes.GameSceneIndex);
@@ -82,9 +89,10 @@ namespace KAG.Unity.Common.Models
 			await CompleteLoad(GameStatus.InLobby);
 		}
 
-		private async Task PrepareLoadingOperation()
+		private async Task PrepareLoadingOperation(GameStatus destination)
 		{
 			GameStatus = GameStatus.Transitioning;
+			_eventHub.Invoke(EventKey.SceneTransition, this, new SceneTransitionEventArgs(destination));
 
 			LoadingProgress = 0.0f;
 			IsLoading = true;

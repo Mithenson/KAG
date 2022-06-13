@@ -1,5 +1,6 @@
 ﻿using Cinemachine;
 using KAG.Shared.Transform;
+using KAG.Unity.Common;
 using UnityEngine;
 using Zenject;
 
@@ -7,7 +8,7 @@ using Vector2 = UnityEngine.Vector2;
 
 namespace KAG.Unity.Gameplay
 {
-	[RequireComponent(typeof(LocalPlayerLookBehaviour))]
+	[RequireComponent(typeof(SocketRepository))]
 	public sealed class CameraTargetBehaviour : GameplayBehaviour
 	{
 		[SerializeField]
@@ -18,14 +19,14 @@ namespace KAG.Unity.Gameplay
 		private float _lookAheadFactor;
 		
 		private CinemachineVirtualCamera _virtualCamera;
-		private LocalPlayerLookBehaviour _lookBehaviour;
+		private SocketRepository _socketRepository;
 
 		[Inject]
 		public void Inject(CinemachineVirtualCamera virtualCamera) =>
 			_virtualCamera = virtualCamera;
 
 		private void Awake() => 
-			_lookBehaviour = GetComponent<LocalPlayerLookBehaviour>();
+			_socketRepository = GetComponent<SocketRepository>();
 
 		private void OnEnable()
 		{
@@ -36,24 +37,12 @@ namespace KAG.Unity.Gameplay
 				_virtualCamera.transform.rotation);
 			
 			_virtualCamera.Follow = _cameraTarget;
-
-			Cursor.lockState = CursorLockMode.Confined;
-			Cursor.visible = false;
-		}
-
-		private void OnApplicationFocus(bool hasFocus)
-		{
-			if (!hasFocus)
-				return;
-
-			Cursor.lockState = CursorLockMode.Confined;
-			Cursor.visible = false;
 		}
 
 		private void Update()
 		{
 			var self = (Vector2)transform.position;
-			var cursor = (Vector2)_lookBehaviour.CursorTarget.position;
+			var cursor = (Vector2)_socketRepository[Socket.Cursor].position;
 
 			_cameraTarget.transform.position = self + (cursor - self) * _lookAheadFactor;
 		}

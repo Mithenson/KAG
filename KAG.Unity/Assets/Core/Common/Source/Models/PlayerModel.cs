@@ -1,6 +1,8 @@
 ﻿using System;
+using KAG.Shared;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
+
 using Random = UnityEngine.Random;
 
 namespace KAG.Unity.Common.Models
@@ -46,10 +48,10 @@ namespace KAG.Unity.Common.Models
 			{
 				if (!string.IsNullOrEmpty(_name))
 					return _name;
-					
+				
 				#if KAG_DEV
 				
-				_name = Constants.Names.Placeholders[Random.Range(0, Constants.Names.Placeholders.Length)];
+				_name = UnityConstants.Names.Placeholders[Random.Range(0, UnityConstants.Names.Placeholders.Length)];
 				PlayerPrefs.SetString(NameSaveKey, _name);
 				
 				#else

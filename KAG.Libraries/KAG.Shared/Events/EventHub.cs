@@ -70,7 +70,7 @@ namespace KAG.Shared.Events
 			where TArgs : EventArgs
 		{
 			if (_wrapperMappings.ContainsKey(evtKey))
-				throw new InvalidOperationException($"An definition already exists for `{nameof(evtKey)}={evtKey}`.");
+				throw new InvalidOperationException($"A definition already exists for `{nameof(evtKey)}={evtKey}`.");
 
 			if (!_wrappers.TryGetValue(typeof(TArgs), out var wrapper))
 			{

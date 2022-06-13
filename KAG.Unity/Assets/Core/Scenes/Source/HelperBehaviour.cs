@@ -1,12 +1,11 @@
-﻿using System.IO;
-using KAG.Unity.Common.Models;
+﻿using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using KAG.Unity.UI.ViewModels;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Zenject;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public class HelperBehaviour : MonoBehaviour
 	{

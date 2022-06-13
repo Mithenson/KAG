@@ -11,22 +11,18 @@ using Zenject;
 
 namespace KAG.Unity.Gameplay
 {
+	[RequireComponent(typeof(SocketRepository))]
 	public sealed class LocalPlayerLookBehaviour : GameplayBehaviour
 	{
-		public Transform CursorTarget =>
-			_cursorTarget;
-		
 		[SerializeField]
 		private Transform _rotationTarget;
-		
-		[SerializeField]
-		private Transform _cursorTarget;
-		
+
 		private UnityClient _client;
 		private InputAction _lookAction;
 
+		private SocketRepository _socketRepository;
 		private RotationComponent _rotation;
-		
+	
 		[Inject]
 		public void Inject(
 			UnityClient client,
@@ -36,6 +32,9 @@ namespace KAG.Unity.Gameplay
 			_lookAction = lookAction;
 		}
 
+		private void Awake() => 
+			_socketRepository = GetComponent<SocketRepository>();
+		
 		private void OnEnable() =>
 			_rotation = Entity.GetComponent<RotationComponent>();
 
@@ -58,7 +57,7 @@ namespace KAG.Unity.Gameplay
 
 			_rotation.Radians = radians;
 			_rotationTarget.rotation = radians.ToRotation();
-			_cursorTarget.transform.position = lookAt;
+			_socketRepository[Socket.Cursor].position = lookAt;
 		}
 	}
 }

@@ -1,12 +1,10 @@
 ﻿using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
-using KAG.Shared.Messages;
 using KAG.Unity.Gameplay;
 using KAG.Unity.Network;
 using Zenject;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
 	public sealed class NetworkInstaller : Installer<NetworkInstaller>
 	{

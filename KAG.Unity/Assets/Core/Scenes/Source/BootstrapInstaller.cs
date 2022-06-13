@@ -14,7 +14,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace KAG.Unity.SceneManagement
+namespace KAG.Unity.Scenes
 {
     public sealed class BootstrapInstaller : SceneInstaller
     {
