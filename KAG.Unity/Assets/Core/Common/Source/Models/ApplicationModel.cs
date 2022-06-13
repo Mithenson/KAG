@@ -56,7 +56,7 @@ namespace KAG.Unity.Common.Models
 			LoadingDescription = "Going into lobby";
 			await PrepareLoadingOperation();
 			
-			var operation = SceneManager.LoadSceneAsync(Constants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
+			var operation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
 			await WaitForLoadOperation(operation);
 			await CompleteLoad(GameStatus.InLobby);
 		}
@@ -65,8 +65,8 @@ namespace KAG.Unity.Common.Models
 			LoadingDescription = "Going into game";
 			await PrepareLoadingOperation();
 			
-			var loadOperation = SceneManager.LoadSceneAsync(Constants.Scenes.GameSceneIndex, LoadSceneMode.Additive);
-			var unloadOperation =  SceneManager.UnloadSceneAsync(Constants.Scenes.LobbySceneIndex);
+			var loadOperation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.GameSceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(UnityConstants.Scenes.LobbySceneIndex);
 			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
 		}
@@ -75,8 +75,8 @@ namespace KAG.Unity.Common.Models
 			LoadingDescription = "Going back to lobby";
 			await PrepareLoadingOperation();
 			
-			var loadOperation = SceneManager.LoadSceneAsync(Constants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
-			var unloadOperation =  SceneManager.UnloadSceneAsync(Constants.Scenes.GameSceneIndex);
+			var loadOperation = SceneManager.LoadSceneAsync(UnityConstants.Scenes.LobbySceneIndex, LoadSceneMode.Additive);
+			var unloadOperation =  SceneManager.UnloadSceneAsync(UnityConstants.Scenes.GameSceneIndex);
 			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
 			await CompleteLoad(GameStatus.InLobby);

@@ -7,7 +7,7 @@ using KAG.Shared.Transform;
 
 namespace KAG.Server.Gameplay
 {
-	public class PlayerMovementMessageHandler : GameplayMessageHandler
+	public sealed class PlayerMovementMessageHandler : GameplayMessageHandler
 	{
 		public override ushort Tag => NetworkTags.PlayerMovement;
 

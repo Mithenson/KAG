@@ -83,6 +83,8 @@ namespace KAG.Unity.SceneManagement
             SimulationFoundationInstaller.Install(Container);
             
             InstallNetworkFoundation();
+
+            Time.fixedDeltaTime = Constants.Time.FixedTimeStep;
         }
 
         private void InstallNetworkFoundation()
@@ -123,7 +125,7 @@ namespace KAG.Unity.SceneManagement
         
         private new async void Start()
         {
-            var prototypeDefinitionsLoadOperation = new AssetLoadOperation<TextAsset>(Constants.Addressables.PrototypeDefinitionLabel);
+            var prototypeDefinitionsLoadOperation = new AssetLoadOperation<TextAsset>(UnityConstants.Addressables.PrototypeDefinitionLabel);
             
             await LoadAssets(prototypeDefinitionsLoadOperation);
             

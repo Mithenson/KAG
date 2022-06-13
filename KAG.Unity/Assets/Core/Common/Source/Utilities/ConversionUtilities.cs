@@ -9,5 +9,11 @@ namespace KAG.Unity.Common.Utilities
 
 		public static KAG.Shared.Transform.Vector2 ToShared(this Vector2 value) => 
 			new KAG.Shared.Transform.Vector2(value.x, value.y);
+		
+		public static Quaternion ToRotation(this float radians) => 
+			Quaternion.Euler(0.0f, 0.0f, radians * Mathf.Rad2Deg);
+
+		public static float ToZRadians(this Quaternion rotation) => 
+			rotation.eulerAngles.z;
 	}
 }

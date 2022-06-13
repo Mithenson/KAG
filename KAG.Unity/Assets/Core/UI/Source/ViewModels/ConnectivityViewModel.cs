@@ -65,12 +65,12 @@ namespace KAG.Unity.UI.ViewModels
 		{
 			PingText = $"{ping:000}ms";
 
-			for (var i = 0; i < Constants.Network.PingData.Length; i++)
+			for (var i = 0; i < UnityConstants.Network.PingData.Length; i++)
 			{
-				if (ping > Constants.Network.PingData[i].Treshold)
+				if (ping > UnityConstants.Network.PingData[i].Treshold)
 					continue;
 
-				PingColor = Constants.Network.PingData[i].Color;
+				PingColor = UnityConstants.Network.PingData[i].Color;
 				break;
 			}
 		}

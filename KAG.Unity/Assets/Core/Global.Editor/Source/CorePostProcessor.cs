@@ -32,10 +32,10 @@ namespace KAG.Unity.Global.Editor
 					CopySharedData(importedAssetPath);
 				
 				if (Path.GetExtension(importedAssetPath) == EditorConstants.PrototypeDefinitionExtension)
-					EnsureAddressableEntry(commonGroup, guid, importedAssetPath, Constants.Addressables.PrototypeDefinitionLabel, ref needAdditionalSave);
+					EnsureAddressableEntry(commonGroup, guid, importedAssetPath, UnityConstants.Addressables.PrototypeDefinitionLabel, ref needAdditionalSave);
 				
 				if (labels.Contains(EditorConstants.PresentationLinkerLabel))
-					EnsureAddressableEntry(commonGroup, guid, importedAssetPath, Constants.Addressables.PresentationLinkerLabel, ref needAdditionalSave);
+					EnsureAddressableEntry(commonGroup, guid, importedAssetPath, UnityConstants.Addressables.PresentationLinkerLabel, ref needAdditionalSave);
 			}
 
 			if (!needAdditionalSave)

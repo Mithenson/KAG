@@ -2,6 +2,9 @@
 {
 	public static class ExtMath
 	{
+		public const float Deg2Rad = 0.01745329f;
+		public const float Rad2Deg = 57.29578f;
+
 		public static float Clamp01(float value) => 
 			Clamp(value, 0.0f, 1.0f);
 		public static float Clamp(float value, float min, float max)

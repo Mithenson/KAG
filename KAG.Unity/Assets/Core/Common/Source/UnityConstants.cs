@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KAG.Unity.Common
 {
-	public static class Constants
+	public static class UnityConstants
 	{
 		public const string RootAssemblyName = "KAG";
 
@@ -24,6 +24,7 @@ namespace KAG.Unity.Common
 			public const string GameplayMap = "Gameplay";
 
 			public const string MoveAction = "Gameplay/Move";
+			public const string LookAction = "Gameplay/Look";
 		}
 
 		public static class Network
@@ -34,6 +35,39 @@ namespace KAG.Unity.Common
 				(100, new Color(1f, 0.85f, 0.45f)),
 				(150, new Color(1f, 0.625f, 0.375f)),
 				(200, new Color(1f, 0.415f, 0.415f)),
+			};
+		}
+
+		public static class Names
+		{
+			public readonly static string[] Placeholders = new string[]
+			{
+				"Alpha",
+				"Bravo",
+				"Charlie",
+				"Delta",
+				"Echo",
+				"Foxtrot",
+				"Golf",
+				"Hotel",
+				"India",
+				"Juliett",
+				"Kilo",
+				"Lima",
+				"Mike",
+				"November",
+				"Oscar",
+				"Papa",
+				"Quebec",
+				"Romeo",
+				"Sierra",
+				"Tango",
+				"Uniform",
+				"Victor",
+				"Whiskey",
+				"X-ray",
+				"Yankee",
+				"Zulu"
 			};
 		}
 	}

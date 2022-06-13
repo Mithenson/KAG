@@ -45,7 +45,7 @@ namespace KAG.Unity.Gameplay
 		[Inject]
 		public void Inject(
 			UnityClient client,
-			[Inject(Id = Constants.Inputs.MoveAction)] InputAction moveAction)
+			[Inject(Id = UnityConstants.Inputs.MoveAction)] InputAction moveAction)
 		{
 			_client = client;
 			_moveAction = moveAction;

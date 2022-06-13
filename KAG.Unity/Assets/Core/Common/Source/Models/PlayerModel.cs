@@ -1,6 +1,7 @@
 ﻿using System;
 using KAG.Unity.Common.Observables;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace KAG.Unity.Common.Models
 {
@@ -13,17 +14,26 @@ namespace KAG.Unity.Common.Models
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_id))
+				if (!string.IsNullOrEmpty(_id))
+					return _id;
+				
+				#if KAG_DEV
+
+				_id = Guid.NewGuid().ToString();
+				PlayerPrefs.SetString(IdSaveKey, _id);
+				
+				#else
+
+				if (PlayerPrefs.HasKey(IdSaveKey))
+					_id = PlayerPrefs.GetString(IdSaveKey);
+				else
 				{
-					if (PlayerPrefs.HasKey(IdSaveKey))
-						_id = PlayerPrefs.GetString(IdSaveKey);
-					else
-					{
-						_id = Guid.NewGuid().ToString();
-						PlayerPrefs.SetString(IdSaveKey, _id);
-					}
+					_id = Guid.NewGuid().ToString();
+					PlayerPrefs.SetString(IdSaveKey, _id);
 				}
-					
+				
+				#endif
+
 				return _id;
 			}
 			set => ChangeProperty(ref _id, value);
@@ -32,7 +42,25 @@ namespace KAG.Unity.Common.Models
 
 		public string Name
 		{
-			get => _name;
+			get
+			{
+				if (!string.IsNullOrEmpty(_name))
+					return _name;
+					
+				#if KAG_DEV
+				
+				_name = Constants.Names.Placeholders[Random.Range(0, Constants.Names.Placeholders.Length)];
+				PlayerPrefs.SetString(NameSaveKey, _name);
+				
+				#else
+				
+				if (PlayerPrefs.HasKey(NameSaveKey))
+					_name = PlayerPrefs.GetString(NameSaveKey);
+				
+				#endif
+				
+				return _name;
+			}
 			set
 			{
 				ChangeProperty(ref _name, value);
@@ -40,11 +68,5 @@ namespace KAG.Unity.Common.Models
 			}
 		}
 		private string _name;
-
-		public PlayerModel()
-		{
-			if (PlayerPrefs.HasKey(NameSaveKey))
-				_name = PlayerPrefs.GetString(NameSaveKey);
-		}
 	}
 }

@@ -47,7 +47,7 @@ namespace KAG.Unity.Network
 			ConnectivityModel connectivityModel,
 			PlayerModel playerModel,
 			TickableManager tickableManager,
-			[Inject(Id = Constants.Inputs.GameplayMap)] InputActionMap gameplayInputs)
+			[Inject(Id = UnityConstants.Inputs.GameplayMap)] InputActionMap gameplayInputs)
 		{
 			_client = client;
 			_messageDispatcher = messageDispatcher;

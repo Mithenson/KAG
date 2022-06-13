@@ -38,7 +38,8 @@ namespace KAG.Unity.Global.Editor
 				locationPathName = "Build/KAG.exe",
 				scenes = EditorBuildSettings.scenes.Select(item => item.path).ToArray(),
 				target = BuildTarget.StandaloneWindows,
-				options = BuildOptions.Development | BuildOptions.ShowBuiltPlayer
+				options = BuildOptions.Development | BuildOptions.ShowBuiltPlayer,
+				extraScriptingDefines = new string[] { "KAG_DEV" }
 			});
 
 			var summary = report.summary;

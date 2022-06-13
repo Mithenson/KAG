@@ -156,7 +156,7 @@ namespace KAG.Unity.Common
 		private IList<ValueDropdownItem<string>> GetAllowedTargetAssemblyQualifiedTypeNames() =>
 			AppDomain.CurrentDomain
 			   .GetAssemblies()
-			   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
+			   .Where(assembly => assembly.GetName().Name.StartsWith(UnityConstants.RootAssemblyName))
 			   .SelectMany(assembly => assembly.GetTypes())
 			   .Where(type =>
 				{

@@ -16,7 +16,7 @@ namespace KAG.Shared.Gameplay
 			Move(input, out _);
 		public void Move(Vector2 input, out Vector2 updatedPosition)
 		{
-			_position.Value += input.Normalized * Speed * 0.02f;
+			_position.Value += input.Normalized * Speed * Constants.Time.FixedTimeStep;
 			updatedPosition = _position.Value;
 		}
 

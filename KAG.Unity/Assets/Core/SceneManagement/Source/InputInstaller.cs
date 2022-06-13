@@ -21,7 +21,7 @@ namespace KAG.Unity.SceneManagement
 			{
 				Container.BindInstance(actionMap).WithId(actionMap.name);
 				
-				if (actionMap.name == Constants.Inputs.GameplayMap)
+				if (actionMap.name == UnityConstants.Inputs.GameplayMap)
 					actionMap.Disable();
 
 				foreach (var action in actionMap.actions)

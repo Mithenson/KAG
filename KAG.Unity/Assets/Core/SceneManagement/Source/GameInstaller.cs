@@ -40,7 +40,7 @@ namespace KAG.Unity.SceneManagement
 			for (var i = 0; i < SceneManager.sceneCount; i++)
 			{
 				var scene = SceneManager.GetSceneAt(i);
-				if (scene.buildIndex != Constants.Scenes.GameSceneIndex)
+				if (scene.buildIndex != UnityConstants.Scenes.GameSceneIndex)
 					continue;
 				
 				foreach (var root in scene.GetRootGameObjects())
@@ -53,7 +53,7 @@ namespace KAG.Unity.SceneManagement
 
 		private new async void Start()
 		{
-			var presentationLinkersLoadOperation = new AssetLoadOperation<Object>(Constants.Addressables.PresentationLinkerLabel);
+			var presentationLinkersLoadOperation = new AssetLoadOperation<Object>(UnityConstants.Addressables.PresentationLinkerLabel);
 
 			await Task.Delay(DelayBeforeLoadingAssetsInMilliseconds);
 			await LoadAssets(presentationLinkersLoadOperation);
@@ -63,7 +63,7 @@ namespace KAG.Unity.SceneManagement
 			var networkManager = Container.Resolve<NetworkManager>();
 			networkManager.Start();
 			
-			var gameplayInputs = Container.ResolveId<InputActionMap>(Constants.Inputs.GameplayMap);
+			var gameplayInputs = Container.ResolveId<InputActionMap>(UnityConstants.Inputs.GameplayMap);
 			gameplayInputs.Enable();
 
 			var applicationModel = Container.Resolve<ApplicationModel>();

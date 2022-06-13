@@ -104,7 +104,7 @@ namespace KAG.Unity.Common.DataBindings
 		private IList<ValueDropdownItem<string>> GetAllowedSourceObservableAssemblyQualifiedTypeNames() => 
 			AppDomain.CurrentDomain
 			   .GetAssemblies()
-			   .Where(assembly => assembly.GetName().Name.StartsWith(Constants.RootAssemblyName))
+			   .Where(assembly => assembly.GetName().Name.StartsWith(UnityConstants.RootAssemblyName))
 			   .SelectMany(assembly => assembly.GetTypes())
 			   .Where(type =>
 				{

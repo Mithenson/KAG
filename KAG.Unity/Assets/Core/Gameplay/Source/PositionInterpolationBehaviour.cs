@@ -1,11 +1,12 @@
-﻿using KAG.Shared.Gameplay;
+﻿using System;
+using KAG.Shared.Gameplay;
 using KAG.Shared.Transform;
 using KAG.Unity.Common.Utilities;
 using UnityEngine;
 
 namespace KAG.Unity.Gameplay
 {
-	public sealed class TransformPresentationBehaviour : GameplayBehaviour
+	public sealed class PositionInterpolationBehaviour : GameplayBehaviour
 	{
 		private PositionComponent _position;
 		
