@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using DarkRift;
 using DarkRift.Client;
 using DarkRift.Client.Unity;
@@ -61,8 +62,9 @@ namespace KAG.Unity.Network.Models
 			using var message = args.GetMessage();
 			if (!message.IsPingAcknowledgementMessage)
 				return;
-			
-			Ping = Mathf.RoundToInt(_client.Client.RoundTripTime.SmoothedRtt / 2.0f);
+
+			var rttInMilliseconds = _client.Client.RoundTripTime.SmoothedRtt * 1_000.0f;
+			Ping = Mathf.RoundToInt(rttInMilliseconds / 2.0f);
 		}
 
 		void IFixedTickable.FixedTick()
@@ -80,10 +82,10 @@ namespace KAG.Unity.Network.Models
 			
 			message.MakePingMessage();
 			_client.SendMessage(message, SendMode.Unreliable);
-
+			
 			_pingComputationCountdown = _pingComputationCadence;
 		}
-
+		
 		void IDisposable.Dispose() =>
 			_client.MessageReceived -= OnClientMessageReceived;
 	}

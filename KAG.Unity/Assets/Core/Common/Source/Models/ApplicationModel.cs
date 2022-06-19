@@ -76,6 +76,7 @@ namespace KAG.Unity.Common.Models
 			var unloadOperation =  SceneManager.UnloadSceneAsync(UnityConstants.Scenes.LobbySceneIndex);
 			
 			await Task.WhenAll(WaitForLoadOperation(loadOperation), WaitForLoadOperation(unloadOperation));
+			// Completion is done via the scene installer
 		}
 		public async Task GoBackToLobby()
 		{

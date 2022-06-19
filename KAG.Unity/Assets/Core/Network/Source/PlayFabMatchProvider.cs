@@ -56,6 +56,9 @@ namespace KAG.Unity.Network
 		public async Task<Match> GetMatch(string playerId, CancellationToken cancellationToken)
 		{
 			_cancellationToken = cancellationToken;
+			_error = null;
+			_socket = null;
+			
 			LoginWithCustomID(playerId);
 		
 			while (_socket == null)
@@ -128,7 +131,7 @@ namespace KAG.Unity.Network
 				QueueName = _matchmakingQueueName,
 				GiveUpAfterSeconds = _matchmakingTimeoutInSeconds
 			};
-		
+
 			OnProgress?.Invoke("Asking for match");
 			PlayFabMultiplayerAPI.CreateMatchmakingTicket(request, OnCreateMatchmakingTicketResult, CachePlayFabError);
 		}

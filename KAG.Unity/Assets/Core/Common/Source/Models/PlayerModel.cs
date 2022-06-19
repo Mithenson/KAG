@@ -21,7 +21,7 @@ namespace KAG.Unity.Common.Models
 				
 				#if KAG_DEV
 
-				_id = Guid.NewGuid().ToString();
+				_id = Name;
 				PlayerPrefs.SetString(IdSaveKey, _id);
 				
 				#else

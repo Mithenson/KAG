@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KAG.Unity.Scenes.Models
 {
-	public class CursorModel : Observable
+	public sealed class CursorModel : Observable
 	{
 		public Transform Target
 		{

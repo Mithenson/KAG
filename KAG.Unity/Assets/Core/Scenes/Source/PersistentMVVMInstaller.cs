@@ -1,4 +1,5 @@
 ﻿using KAG.Unity.Common.Models;
+using KAG.Unity.UI.Models;
 using KAG.Unity.UI.ViewModels;
 using Zenject;
 
@@ -12,7 +13,10 @@ namespace KAG.Unity.Scenes
             
 			Container.BindInterfacesAndSelfTo<ApplicationModel>().AsSingle();
 			Container.BindInterfacesAndSelfTo<ApplicationViewModel>().AsSingle();
-            
+
+			Container.BindInterfacesAndSelfTo<UIModel>().AsSingle();
+			Container.BindInterfacesAndSelfTo<UIViewModel>().AsSingle();
+			
 			Container.BindInterfacesAndSelfTo<SettingsViewModel>().AsSingle();
 		}
 	}

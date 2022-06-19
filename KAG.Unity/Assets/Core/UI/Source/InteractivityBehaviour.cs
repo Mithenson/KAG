@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using Zenject;
+﻿using KAG.Unity.UI.ViewModels;
+using UnityEngine;
 
 namespace KAG.Unity.UI
 {
 	[RequireComponent(typeof(CanvasGroup))]
-	public class InteractivityBehaviour : MonoBehaviour
+	public sealed class InteractivityBehaviour : MonoBehaviour
 	{
 		[SerializeField, Range(0.0f, 1.0f)]
 		private float _offOpacity = 0.625f;

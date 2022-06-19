@@ -15,7 +15,8 @@ try{
 }
 catch{
 	echo "Failed to connect to playfab multiplayer API."
-	
+	echo $_
+
 	Read-Host -Prompt "Press enter to exit"
 	exit
 }
@@ -24,11 +25,21 @@ echo "`n"
 
 echo "Uploading latest server build..."
 try{
-	Remove-PfAsset -FileName "DarkRift.Server.Console.zip"
-	New-PfAsset -FilePath "D:\Work\Git\KAG\KAG.DarkRift\DarkRift.Server.Console.zip" -AssetName "DarkRift.Server.Console.zip"
+	Remove-PfAsset -FileName "KAG.DarkRift.Server.Console.zip"
 }
 catch{
-	echo "Either failed to remove existing build or could not upload the latest one."
+	echo "Failed to remove existing build."
+	echo $_
+	
+	Read-Host -Prompt "Press enter to exit"
+	exit
+}
+try{
+	New-PfAsset -FilePath "D:\Work\Git\KAG\KAG.DarkRift\KAG.DarkRift.Server.Console.zip" -AssetName "KAG.DarkRift.Server.Console.zip"
+}
+catch{
+	echo "Failed to upload the latest build."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -61,7 +72,7 @@ try{
 	)
 	$gameAssets = @(
 		@{
-			FileName="DarkRift.Server.Console.zip"; 
+			FileName="KAG.DarkRift.Server.Console.zip"; 
 			MountPath="C:\Assets" 
 		}
 	)
@@ -70,6 +81,7 @@ try{
 }
 catch{
 	echo "Failed to create a new build."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -87,6 +99,7 @@ try{
 }
 catch{
 	echo "Failed to authenticate to playfab rest API."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -104,8 +117,8 @@ try{
 			"BuildId"=$buildResponse.data.BuildId;
 			"ServerAllocationEnabled"="true";
 			"Name"="DefaultQueue";
-			"MinMatchSize"=3;
-			"MaxMatchSize"=3;
+			"MinMatchSize"=2;
+			"MaxMatchSize"=12;
 			"RegionSelectionRule"=@{
 				"Name"="region";
 				"Path"="Latencies";
@@ -119,6 +132,7 @@ try{
 }
 catch{
 	echo "Failed to create matchmaking queue."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit

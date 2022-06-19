@@ -5,41 +5,65 @@ using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using KAG.Unity.Scenes.Models;
+using KAG.Unity.UI.ViewModels;
 using UnityEngine;
 using Zenject;
 
 namespace KAG.Unity.Scenes
 {
-	public sealed class CursorService : IInitializable, IDisposable
+	public sealed class CursorService : IInitializable, ITickable, IDisposable
 	{
+		public bool IsActive
+		{
+			get => _isActive;
+			private set
+			{
+				if (_isActive == value)
+					return;
+
+				if (value)
+				{
+					Cursor.lockState = CursorLockMode.Confined;
+					Cursor.visible = false;
+				}
+				else
+				{
+					Cursor.lockState = CursorLockMode.None;
+					Cursor.visible = true;
+				}
+
+				_model.IsActive = value;
+				_isActive = value;
+			}
+		}
+
+		private readonly ApplicationViewModel _applicationViewModel;
+		private readonly UIViewModel _uiViewModel;
 		private readonly CursorModel _model;
 		private readonly UnityClient _client;
 		private readonly EventHub _eventHub;
 
+		private bool _hasFocus;
 		private bool _isActive;
 		
-		public CursorService(CursorModel model, UnityClient client, EventHub eventHub)
+		public CursorService(
+			ApplicationViewModel applicationViewModel, 
+			UIViewModel uiViewModel,
+			CursorModel model, UnityClient client, 
+			EventHub eventHub)
 		{
+			_applicationViewModel = applicationViewModel;
+			_uiViewModel = uiViewModel;
 			_model = model;
 			_client = client;
 			_eventHub = eventHub;
-
-			_isActive = true;
 			
-			OnFocusChanged(Application.isFocused);
+			_hasFocus = Application.isFocused;
 			Application.focusChanged += OnFocusChanged;
 		}
 
-		private void OnFocusChanged(bool hasFocus)
-		{
-			_model.IsActive = hasFocus;
-			
-			if (!hasFocus)
-				return;
-            
-			Cursor.lockState = CursorLockMode.Confined;
-			Cursor.visible = false;
-		}
+		private void OnFocusChanged(bool hasFocus) =>
+			_hasFocus = hasFocus;
 
 		private void OnPlayerArrival(object sender, PlayerArrivalEventArgs args)
 		{
@@ -70,19 +94,23 @@ namespace KAG.Unity.Scenes
 			_eventHub.Subscribe<SceneTransitionEventArgs>(EventKey.SceneTransition, OnSceneTransition);
 		}
 
+		void ITickable.Tick()
+		{
+			IsActive = _hasFocus 
+			           && !_applicationViewModel.IsLoading
+			           && !_uiViewModel.IsHoveringAnyElement 
+			           && !_uiViewModel.IsInPanel;
+		}
+
 		void IDisposable.Dispose() =>
 			Dispose();
 		private void Dispose()
 		{
-			if (!_isActive)
+			if (!IsActive)
 				return;
 			
 			Application.focusChanged -= OnFocusChanged;
-			
-			Cursor.lockState = CursorLockMode.None;
-			Cursor.visible = true;
-
-			_isActive = false;
+			IsActive = false;
 		}
 	}
 }

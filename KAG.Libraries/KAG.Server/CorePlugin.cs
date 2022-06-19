@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using DarkRift;
 using DarkRift.Server;
@@ -168,13 +169,13 @@ namespace KAG.Server
 
 			using var writer = DarkRiftWriter.Create();
 			writer.WriteRaw(Array.Empty<byte>(), 0, 0);
-
+			
 			using var response = Message.Create(NetworkTags.PingComputation, writer);
 
 			response.MakePingAcknowledgementMessage(message);
 			args.Client.SendMessage(response, SendMode.Unreliable);
 		}
-
+	
 		private void OnClientDisconnected(object sender, ClientDisconnectedEventArgs args)
 		{
 			if (!_connectedPlayers.TryGetValue(args.Client, out var player))

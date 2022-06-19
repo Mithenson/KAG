@@ -31,6 +31,9 @@ namespace KAG.Unity.Scenes
 		{
 			SimulationInstaller.Install(Container, _componentTypeRepository);
 			NetworkInstaller.Install(Container);
+
+			Container.BindInterfacesAndSelfTo<PerformanceModel>().AsSingle();
+			Container.BindInterfacesAndSelfTo<PerformanceViewModel>().AsSingle();
 			
 			Container.BindInterfacesAndSelfTo<ConnectivityModel>().AsSingle();
 			Container.BindInterfacesAndSelfTo<ConnectivityViewModel>().AsSingle();

@@ -10,6 +10,7 @@ try{
 }
 catch{
 	echo "Failed to authenticate to playfab rest API."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -30,6 +31,7 @@ try{
 }
 catch{
 	echo "Failed to send request to delete matchmaking queue."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -44,6 +46,7 @@ try{
 }
 catch{
 	echo "Failed to connect to playfab multiplayer API."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
@@ -66,6 +69,7 @@ try{
 }
 catch{
 	echo "Either failed to collect builds or could not remove the playtest one."
+	echo $_
 	
 	Read-Host -Prompt "Press enter to exit"
 	exit
