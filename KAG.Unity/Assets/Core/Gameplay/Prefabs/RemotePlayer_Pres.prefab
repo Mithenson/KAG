@@ -65,10 +65,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2325816745461746673, guid: f9d5ab0d2c0ba094abf161ff2161f47e, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 01bb2584d05177b4aa444ae44f0feb9b, type: 3}
     - target: {fileID: 5807736489318560646, guid: f9d5ab0d2c0ba094abf161ff2161f47e, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 061e147d676e74bac9cce5b73d150a15, type: 3}
+      objectReference: {fileID: 21300000, guid: d2f203bcd100812439b76967b27043e2, type: 3}
     - target: {fileID: 6763009561936650394, guid: f9d5ab0d2c0ba094abf161ff2161f47e, type: 3}
       propertyPath: m_Name
       value: RemotePlayer_Pres
