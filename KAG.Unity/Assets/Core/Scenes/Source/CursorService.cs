@@ -6,6 +6,7 @@ using KAG.Unity.Common.Models;
 using KAG.Unity.Network;
 using KAG.Unity.Scenes.Models;
 using KAG.Unity.UI.ViewModels;
+using UnityEditor;
 using UnityEngine;
 using Zenject;
 
@@ -21,23 +22,15 @@ namespace KAG.Unity.Scenes
 				if (_isActive == value)
 					return;
 
-				if (value)
-				{
-					Cursor.lockState = CursorLockMode.Confined;
-					Cursor.visible = false;
-				}
-				else
-				{
-					Cursor.lockState = CursorLockMode.None;
-					Cursor.visible = true;
-				}
-
+				Cursor.visible = !value;
+				
 				_model.IsActive = value;
 				_isActive = value;
 			}
 		}
 
-		private readonly ApplicationViewModel _applicationViewModel;
+		private readonly ConfigurationMonitor<CursorConfiguration> _configurationMonitor;
+		private readonly ApplicationModel _applicationModel;
 		private readonly UIViewModel _uiViewModel;
 		private readonly CursorModel _model;
 		private readonly UnityClient _client;
@@ -47,12 +40,14 @@ namespace KAG.Unity.Scenes
 		private bool _isActive;
 		
 		public CursorService(
-			ApplicationViewModel applicationViewModel, 
+			ConfigurationMonitor<CursorConfiguration> configurationMonitor,
+			ApplicationModel applicationModel, 
 			UIViewModel uiViewModel,
 			CursorModel model, UnityClient client, 
 			EventHub eventHub)
 		{
-			_applicationViewModel = applicationViewModel;
+			_configurationMonitor = configurationMonitor;
+			_applicationModel = applicationModel;
 			_uiViewModel = uiViewModel;
 			_model = model;
 			_client = client;
@@ -81,25 +76,71 @@ namespace KAG.Unity.Scenes
 
 		private void OnSceneTransition(object sender, SceneTransitionEventArgs args)
 		{
-			if (args.Destination != GameStatus.InLobby)
-				return;
-			
-			_eventHub.Unsubscribe<SceneTransitionEventArgs>(EventKey.SceneTransition, OnSceneTransition);
-			Dispose();
+			if (args.Destination == GameStatus.InGame)
+				_eventHub.Subscribe<PlayerArrivalEventArgs>(SharedEventKey.PlayerArrival, OnPlayerArrival);
+			else
+				_model.Target = null;
 		}
 
-		void IInitializable.Initialize()
-		{
-			_eventHub.Subscribe<PlayerArrivalEventArgs>(SharedEventKey.PlayerArrival, OnPlayerArrival);
+		void IInitializable.Initialize() =>
 			_eventHub.Subscribe<SceneTransitionEventArgs>(EventKey.SceneTransition, OnSceneTransition);
-		}
 
 		void ITickable.Tick()
 		{
-			IsActive = _hasFocus 
-			           && !_applicationViewModel.IsLoading
-			           && !_uiViewModel.IsHoveringAnyElement 
-			           && !_uiViewModel.IsInPanel;
+			IsActive = _hasFocus && _configurationMonitor.IsOperational;
+
+			if (Cursor.visible != !IsActive)
+				Cursor.visible = !IsActive;
+
+			var cursorState = _model.State;
+			CheckForInGame(ref cursorState);
+			CheckForInUI(ref cursorState);
+			CheckForIsHovering(ref cursorState);
+
+			_model.State = cursorState;
+		}
+		
+		public void CheckForInGame(ref CursorState state)
+		{
+			if (_applicationModel.GameStatus == GameStatus.InGame)
+			{
+				state |= CursorState.InGame;
+			}
+			else
+			{
+				if (state.HasFlag(CursorState.InGame))
+					state ^= CursorState.InGame;
+			}
+		}
+
+		public void CheckForInUI(ref CursorState state)
+		{
+			if (_applicationModel.GameStatus != GameStatus.InGame
+			    || _uiViewModel.IsInPanel)
+			{
+				state |= CursorState.InUI;
+				
+				if (state.HasFlag(CursorState.InGame))
+					state ^= CursorState.InGame;
+			}
+			else
+			{
+				if (state.HasFlag(CursorState.InUI))
+					state ^= CursorState.InUI;
+			}
+		}
+		
+		public void CheckForIsHovering(ref CursorState state)
+		{
+			if (_uiViewModel.IsHoveringAnyElement)
+			{
+				state |= CursorState.IsHovering;
+			}
+			else
+			{
+				if (state.HasFlag(CursorState.IsHovering))
+					state ^= CursorState.IsHovering;
+			}
 		}
 
 		void IDisposable.Dispose() =>

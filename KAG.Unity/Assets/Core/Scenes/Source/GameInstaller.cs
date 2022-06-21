@@ -40,10 +40,6 @@ namespace KAG.Unity.Scenes
 				
 			Container.BindInterfacesAndSelfTo<LeaveMatchViewModel>().AsSingle();
 
-			Container.BindInterfacesAndSelfTo<CursorService>().AsSingle();
-			Container.BindInterfacesAndSelfTo<CursorModel>().AsSingle();
-			Container.BindInterfacesAndSelfTo<CursorViewModel>().AsSingle();
-
 			for (var i = 0; i < SceneManager.sceneCount; i++)
 			{
 				var scene = SceneManager.GetSceneAt(i);

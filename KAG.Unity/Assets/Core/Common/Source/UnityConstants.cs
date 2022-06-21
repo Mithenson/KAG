@@ -11,6 +11,11 @@ namespace KAG.Unity.Common
 		{
 			public const string PrototypeDefinitionLabel = "prototype_definition";
 			public const string PresentationLinkerLabel = "presentation_linker";
+			public const string ConfigurationLabel = "configuration";
+			
+			public const string BoostrapLabel = "bootstrap";
+			public const string LobbyLabel = "lobby";
+			public const string GameLabel = "game";
 		}
 
 		public static class Scenes
@@ -22,9 +27,10 @@ namespace KAG.Unity.Common
 		public static class Inputs
 		{
 			public const string GameplayMap = "Gameplay";
+			public const string PersistentMap = "Persistent";
 
 			public const string MoveAction = "Gameplay/Move";
-			public const string LookAction = "Gameplay/Look";
+			public const string LookAction = "Persistent/Look";
 		}
 
 		public static class Network

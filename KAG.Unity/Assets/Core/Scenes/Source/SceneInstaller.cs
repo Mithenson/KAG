@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KAG.Unity.Common.Models;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using Zenject;
 using Object = UnityEngine.Object;
 
@@ -46,39 +48,39 @@ namespace KAG.Unity.Scenes
 			public IList<TObject> Results => 
 				_handle.Result;
             
-			private string _label;
+			private List<string> _labels;
 			private Action<TObject> _onResolve;
 			private Action<IList<TObject>> _onComplete;
 			private AsyncOperationHandle<IList<TObject>> _handle;
             
-			public AssetLoadOperation(string label)
+			public AssetLoadOperation(params string[] labels)
 			{
-				_label = label;
+				_labels = labels.ToList();
 				_onResolve = _ => { };
 				_onComplete = _ => { };
 			}
-			public AssetLoadOperation(string label, Action<TObject> onResolve)
+			public AssetLoadOperation(Action<TObject> onResolve, params string[] labels)
 			{
-				_label = label;
+				_labels = labels.ToList();
 				_onResolve = onResolve;
 				_onComplete = _ => { };
 			}
-			public AssetLoadOperation(string label, Action<IList<TObject>> onComplete)
+			public AssetLoadOperation(Action<IList<TObject>> onComplete, params string[] labels)
 			{
-				_label = label;
+				_labels = labels.ToList();
 				_onResolve = _ => { };
 				_onComplete = onComplete;
 			}
-			public AssetLoadOperation(string label, Action<TObject> onResolve, Action<IList<TObject>> onComplete)
+			public AssetLoadOperation(Action<TObject> onResolve, Action<IList<TObject>> onComplete, params string[] labels)
 			{
-				_label = label;
+				_labels = labels.ToList();
 				_onResolve = onResolve;
 				_onComplete = onComplete;
 			}
 
 			public override async Task Load(LoadProgressHandle progressHandle)
 			{
-				_handle = Addressables.LoadAssetsAsync<TObject>(_label, _onResolve);
+				_handle = Addressables.LoadAssetsAsync<TObject>(_labels, _onResolve, Addressables.MergeMode.Intersection);
 				while (!_handle.IsDone)
 				{
 					await Task.Delay(AssetLoadPollingIntervalInMilliseconds);

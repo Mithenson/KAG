@@ -27,6 +27,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - presentation_linker
+  - m_GUID: 34fb3500ca95f994d963b554f6fcefdf
+    m_Address: CursorConfiguration.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - configuration
+    - bootstrap
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1eab3871bfda0ee41a61cfb180bd4f25, type: 2}
   m_SchemaSet:

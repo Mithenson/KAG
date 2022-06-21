@@ -11,22 +11,30 @@ namespace KAG.Unity.Scenes.Models
 			set
 			{
 				ChangeProperty(ref _target, value);
-				IsActive = value != null;
+				HasTarget = value != null;
 			}
 		}
 		private Transform _target;
 
+		public bool HasTarget
+		{
+			get => _hasTarget;
+			set => ChangeProperty(ref _hasTarget, value);
+		}
+		private bool _hasTarget;
+
 		public bool IsActive
 		{
 			get => _isActive;
-			set
-			{
-				if (Target == null)
-					return;
-				
-				ChangeProperty(ref _isActive, value);
-			}
+			set => ChangeProperty(ref _isActive, value);
 		}
 		private bool _isActive;
+
+		public CursorState State
+		{
+			get => _state;
+			set => ChangeProperty(ref _state, value);
+		}
+		private CursorState _state;
 	}
 }

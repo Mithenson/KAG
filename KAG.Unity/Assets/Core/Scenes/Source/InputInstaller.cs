@@ -21,8 +21,16 @@ namespace KAG.Unity.Scenes
 			{
 				Container.BindInstance(actionMap).WithId(actionMap.name);
 				
-				if (actionMap.name == UnityConstants.Inputs.GameplayMap)
-					actionMap.Disable();
+				switch (actionMap.name)
+				{
+					case UnityConstants.Inputs.GameplayMap:
+						actionMap.Disable();
+						break;
+
+					case UnityConstants.Inputs.PersistentMap:
+						actionMap.Enable();
+						break;
+				}
 
 				foreach (var action in actionMap.actions)
 					Container.BindInstance(action).WithId($"{actionMap.name}/{action.name}");

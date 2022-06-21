@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: CursorConfiguration
+  m_EditorClassIdentifier: KAG.Unity.Scenes:KAG.Unity.Scenes:CursorConfiguration
+  _defaultVisual:
+    _associatedState: 0
+    _sprite: {fileID: 21300000, guid: 89c4044e1af559c4aa12c9c48496bc00, type: 3}
+    _offset: {x: 14.5, y: -22.5}
+  _visuals:
+  - _associatedState: 1
+    _sprite: {fileID: 21300000, guid: 89c4044e1af559c4aa12c9c48496bc00, type: 3}
+    _offset: {x: 14.5, y: -22.5}
+  - _associatedState: 5
+    _sprite: {fileID: 21300000, guid: c22304abf3516174bbc57f6e4469d841, type: 3}
+    _offset: {x: 18.5, y: -20}
+  - _associatedState: 2
+    _sprite: {fileID: 21300000, guid: d2a7c271ad930f947b0e580f1e6cbfbe, type: 3}
+    _offset: {x: 0, y: 0}

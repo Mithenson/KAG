@@ -80,6 +80,7 @@ namespace KAG.Unity.Scenes
             
             InputInstaller.Install(Container, _inputs);
             PersistentMVVMInstaller.Install(Container);
+            PersistentConfigurationInstaller.Install(Container);
             SimulationFoundationInstaller.Install(Container);
             
             InstallNetworkFoundation();
@@ -127,9 +128,14 @@ namespace KAG.Unity.Scenes
         {
             var prototypeDefinitionsLoadOperation = new AssetLoadOperation<TextAsset>(UnityConstants.Addressables.PrototypeDefinitionLabel);
             
-            await LoadAssets(prototypeDefinitionsLoadOperation);
+            var configurationsLoadOperation = new AssetLoadOperation<ScriptableObject>(
+                UnityConstants.Addressables.ConfigurationLabel,
+                UnityConstants.Addressables.BoostrapLabel);
+            
+            await LoadAssets(prototypeDefinitionsLoadOperation, configurationsLoadOperation);
             
             InitializePresentationRepository(prototypeDefinitionsLoadOperation);
+            InitializeConfigurations(configurationsLoadOperation);
             
             await Task.Delay(DelayBeforeLobbyLoadInMilliseconds);
             
@@ -150,6 +156,20 @@ namespace KAG.Unity.Scenes
             var prototypeRepository = Container.Resolve<PrototypeRepository>();
 
             prototypeRepository.Initialize(prototypes, componentTypeRepository);
+        }
+
+        private void InitializeConfigurations(AssetLoadOperation<ScriptableObject> loadOperation)
+        {
+            foreach (var configuration in loadOperation.Results)
+            {
+                var monitorType = typeof(ConfigurationMonitor<>).MakeGenericType(configuration.GetType());
+
+                var configurationMonitor = Container.TryResolve(monitorType) as ConfigurationMonitor;
+                if (configurationMonitor == null)
+                    continue;
+                
+                configurationMonitor.Initialize(configuration);
+            }
         }
     }
 }

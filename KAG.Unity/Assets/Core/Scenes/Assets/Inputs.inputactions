@@ -12,14 +12,6 @@
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": ""
-                },
-                {
-                    "name": "Look",
-                    "type": "Value",
-                    "id": "0107c653-5fdf-4ce6-9c24-c65fb95e77d8",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -77,17 +69,6 @@
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "9f1dfbd5-e659-4125-a79b-8c9ff0056870",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Look",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -592,6 +573,33 @@
                     "processors": "",
                     "groups": "XR",
                     "action": "TrackedDeviceOrientation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Persistent",
+            "id": "03837625-e730-4f64-8bb4-74383a0bce29",
+            "actions": [
+                {
+                    "name": "Look",
+                    "type": "PassThrough",
+                    "id": "ae5778ca-19fe-4d48-ba3b-170a7f022dab",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "f268d187-043a-4ed4-ba6d-06ec09288436",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
