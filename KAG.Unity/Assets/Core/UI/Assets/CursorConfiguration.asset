@@ -17,12 +17,12 @@ MonoBehaviour:
     _sprite: {fileID: 21300000, guid: 89c4044e1af559c4aa12c9c48496bc00, type: 3}
     _offset: {x: 14.5, y: -22.5}
   _visuals:
+  - _associatedState: 4
+    _sprite: {fileID: 21300000, guid: c22304abf3516174bbc57f6e4469d841, type: 3}
+    _offset: {x: 18.5, y: -20}
   - _associatedState: 1
     _sprite: {fileID: 21300000, guid: 89c4044e1af559c4aa12c9c48496bc00, type: 3}
     _offset: {x: 14.5, y: -22.5}
-  - _associatedState: 5
-    _sprite: {fileID: 21300000, guid: c22304abf3516174bbc57f6e4469d841, type: 3}
-    _offset: {x: 18.5, y: -20}
   - _associatedState: 2
     _sprite: {fileID: 21300000, guid: d2a7c271ad930f947b0e580f1e6cbfbe, type: 3}
     _offset: {x: 0, y: 0}

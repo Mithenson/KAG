@@ -2,6 +2,6 @@
 {
 	public enum Socket
 	{
-		Cursor,
+		Undefined
 	}
 }

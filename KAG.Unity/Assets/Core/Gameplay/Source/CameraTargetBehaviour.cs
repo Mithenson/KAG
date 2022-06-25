@@ -1,14 +1,12 @@
 ﻿using Cinemachine;
 using KAG.Shared.Transform;
-using KAG.Unity.Common;
+using KAG.Unity.Scenes.Models;
 using UnityEngine;
 using Zenject;
-
 using Vector2 = UnityEngine.Vector2;
 
 namespace KAG.Unity.Gameplay
 {
-	[RequireComponent(typeof(SocketRepository))]
 	public sealed class CameraTargetBehaviour : GameplayBehaviour
 	{
 		[SerializeField]
@@ -19,15 +17,15 @@ namespace KAG.Unity.Gameplay
 		private float _lookAheadFactor;
 		
 		private CinemachineVirtualCamera _virtualCamera;
-		private SocketRepository _socketRepository;
+		private CursorModel _cursorModel;
 
 		[Inject]
-		public void Inject(CinemachineVirtualCamera virtualCamera) =>
+		public void Inject(CinemachineVirtualCamera virtualCamera, CursorModel cursorModel)
+		{
 			_virtualCamera = virtualCamera;
-
-		private void Awake() => 
-			_socketRepository = GetComponent<SocketRepository>();
-
+			_cursorModel = cursorModel;
+		}
+		
 		private void OnEnable()
 		{
 			var position = Entity.GetComponent<PositionComponent>();
@@ -42,7 +40,7 @@ namespace KAG.Unity.Gameplay
 		private void Update()
 		{
 			var self = (Vector2)transform.position;
-			var cursor = (Vector2)_socketRepository[Socket.Cursor].position;
+			var cursor = _cursorModel.WorldPosition;
 
 			_cameraTarget.transform.position = self + (cursor - self) * _lookAheadFactor;
 		}

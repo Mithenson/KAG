@@ -16,7 +16,7 @@ namespace KAG.Unity.Scenes
 		{
 			for (var i = 0; i < _visuals.Length; i++)
 			{
-				if (_visuals[i].AssociatedState == state)
+				if (state.HasFlag(_visuals[i].AssociatedState))
 					return _visuals[i];
 			}
 

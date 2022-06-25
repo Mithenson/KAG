@@ -1,18 +1,15 @@
 ﻿using System;
-using DarkRift.Client.Unity;
-using KAG.Shared.Events;
 using KAG.Unity.Common;
 using KAG.Unity.Common.Models;
-using KAG.Unity.Network;
 using KAG.Unity.Scenes.Models;
 using KAG.Unity.UI.ViewModels;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Zenject;
 
 namespace KAG.Unity.Scenes
 {
-	public sealed class CursorService : IInitializable, ITickable, IDisposable
+	public sealed class CursorService : ITickable, IDisposable
 	{
 		public bool IsActive
 		{
@@ -30,28 +27,26 @@ namespace KAG.Unity.Scenes
 		}
 
 		private readonly ConfigurationMonitor<CursorConfiguration> _configurationMonitor;
+		private readonly InputAction _lookAction;
 		private readonly ApplicationModel _applicationModel;
 		private readonly UIViewModel _uiViewModel;
 		private readonly CursorModel _model;
-		private readonly UnityClient _client;
-		private readonly EventHub _eventHub;
 
 		private bool _hasFocus;
 		private bool _isActive;
 		
 		public CursorService(
 			ConfigurationMonitor<CursorConfiguration> configurationMonitor,
+			[Inject(Id = UnityConstants.Inputs.LookAction)] InputAction lookAction,
 			ApplicationModel applicationModel, 
 			UIViewModel uiViewModel,
-			CursorModel model, UnityClient client, 
-			EventHub eventHub)
+			CursorModel model)
 		{
 			_configurationMonitor = configurationMonitor;
+			_lookAction = lookAction;
 			_applicationModel = applicationModel;
 			_uiViewModel = uiViewModel;
 			_model = model;
-			_client = client;
-			_eventHub = eventHub;
 			
 			_hasFocus = Application.isFocused;
 			Application.focusChanged += OnFocusChanged;
@@ -59,31 +54,6 @@ namespace KAG.Unity.Scenes
 
 		private void OnFocusChanged(bool hasFocus) =>
 			_hasFocus = hasFocus;
-
-		private void OnPlayerArrival(object sender, PlayerArrivalEventArgs args)
-		{
-			if (args.Player.Component.Id != _client.ID)
-				return;
-			
-			_eventHub.Unsubscribe<PlayerArrivalEventArgs>(SharedEventKey.PlayerArrival, OnPlayerArrival);
-
-			var socketRepository = args.Player.Presentation.GetComponent<SocketRepository>();
-			if (socketRepository == null)
-				throw new InvalidOperationException($"The local player's `{nameof(args.Player.Presentation)}={args.Player.Presentation}` has no {nameof(SocketRepository)}.");
-			
-			_model.Target = socketRepository[Socket.Cursor];
-		}
-
-		private void OnSceneTransition(object sender, SceneTransitionEventArgs args)
-		{
-			if (args.Destination == GameStatus.InGame)
-				_eventHub.Subscribe<PlayerArrivalEventArgs>(SharedEventKey.PlayerArrival, OnPlayerArrival);
-			else
-				_model.Target = null;
-		}
-
-		void IInitializable.Initialize() =>
-			_eventHub.Subscribe<SceneTransitionEventArgs>(EventKey.SceneTransition, OnSceneTransition);
 
 		void ITickable.Tick()
 		{
@@ -96,60 +66,32 @@ namespace KAG.Unity.Scenes
 			CheckForInGame(ref cursorState);
 			CheckForInUI(ref cursorState);
 			CheckForIsHovering(ref cursorState);
-
+		
 			_model.State = cursorState;
+			_model.Position = _lookAction.ReadValue<Vector2>();
 		}
 		
-		public void CheckForInGame(ref CursorState state)
+		public void CheckForInGame(ref CursorState state) =>
+			state = UpdateState(_applicationModel.GameStatus == GameStatus.InGame, state, CursorState.InGame);
+
+		public void CheckForInUI(ref CursorState state) => 
+			state = UpdateState(_uiViewModel.IsInPanel, state, CursorState.InPanel);
+
+		public void CheckForIsHovering(ref CursorState state) =>
+			state = UpdateState(_uiViewModel.IsHoveringAnyElement, state, CursorState.IsHovering);
+
+		private CursorState UpdateState(bool condition, CursorState state, CursorState flags)
 		{
-			if (_applicationModel.GameStatus == GameStatus.InGame)
-			{
-				state |= CursorState.InGame;
-			}
-			else
-			{
-				if (state.HasFlag(CursorState.InGame))
-					state ^= CursorState.InGame;
-			}
+			if (condition)
+				state |= flags;
+			else if (state.HasFlag(flags))
+				state ^= flags;
+
+			return state;
 		}
 
-		public void CheckForInUI(ref CursorState state)
+		void IDisposable.Dispose()
 		{
-			if (_applicationModel.GameStatus != GameStatus.InGame
-			    || _uiViewModel.IsInPanel)
-			{
-				state |= CursorState.InUI;
-				
-				if (state.HasFlag(CursorState.InGame))
-					state ^= CursorState.InGame;
-			}
-			else
-			{
-				if (state.HasFlag(CursorState.InUI))
-					state ^= CursorState.InUI;
-			}
-		}
-		
-		public void CheckForIsHovering(ref CursorState state)
-		{
-			if (_uiViewModel.IsHoveringAnyElement)
-			{
-				state |= CursorState.IsHovering;
-			}
-			else
-			{
-				if (state.HasFlag(CursorState.IsHovering))
-					state ^= CursorState.IsHovering;
-			}
-		}
-
-		void IDisposable.Dispose() =>
-			Dispose();
-		private void Dispose()
-		{
-			if (!IsActive)
-				return;
-			
 			Application.focusChanged -= OnFocusChanged;
 			IsActive = false;
 		}

@@ -5,24 +5,6 @@ namespace KAG.Unity.Scenes.Models
 {
 	public sealed class CursorModel : Observable
 	{
-		public Transform Target
-		{
-			get => _target;
-			set
-			{
-				ChangeProperty(ref _target, value);
-				HasTarget = value != null;
-			}
-		}
-		private Transform _target;
-
-		public bool HasTarget
-		{
-			get => _hasTarget;
-			set => ChangeProperty(ref _hasTarget, value);
-		}
-		private bool _hasTarget;
-
 		public bool IsActive
 		{
 			get => _isActive;
@@ -36,5 +18,15 @@ namespace KAG.Unity.Scenes.Models
 			set => ChangeProperty(ref _state, value);
 		}
 		private CursorState _state;
+
+		public Vector2 WorldPosition => 
+			Camera.main.ScreenToWorldPoint(Position);
+
+		public Vector2 Position
+		{
+			get => _position;
+			set => ChangeProperty(ref _position, value);
+		}
+		private Vector2 _position;
 	}
 }

@@ -1,8 +1,6 @@
 ﻿using KAG.Unity.Common;
 using KAG.Unity.Scenes.Models;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 using Zenject;
 
 namespace KAG.Unity.Scenes.ViewModels
@@ -21,7 +19,7 @@ namespace KAG.Unity.Scenes.ViewModels
 			get => _isActive;
 			set
 			{
-				if (!_model.HasTarget && _lookAction.ReadValue<Vector2>() == Vector2.zero)
+				if (_model.Position == Vector2.zero)
 					return;
 				
 				ChangeProperty(ref _isActive, value);
@@ -45,15 +43,12 @@ namespace KAG.Unity.Scenes.ViewModels
 		private Vector2 _Offset;
 
 		private readonly ConfigurationMonitor<CursorConfiguration> _configurationMonitor;
-		private readonly InputAction _lookAction;
 		
 		public CursorViewModel(
 			CursorModel model,
-			ConfigurationMonitor<CursorConfiguration> configurationMonitor,
-			[Inject(Id = UnityConstants.Inputs.LookAction)] InputAction lookAction) : base(model)
+			ConfigurationMonitor<CursorConfiguration> configurationMonitor) : base(model)
 		{
 			_configurationMonitor = configurationMonitor;
-			_lookAction = lookAction;
 			
 			AddPropertyBinding(nameof(CursorModel.IsActive), nameof(IsActive));
 			AddMethodBinding(nameof(CursorModel.State), nameof(OnStateChanged));
@@ -85,30 +80,17 @@ namespace KAG.Unity.Scenes.ViewModels
 		{
 			if (!IsActive)
 			{
-				if (!_model.IsActive)
+				if (!_model.IsActive 
+				    || _model.Position == Vector2.zero)
 					return;
-
-				if (_model.HasTarget)
-				{
-					Position = Camera.main.WorldToScreenPoint(_model.Target.position);
-					IsActive = true;
-				}
-				else
-				{
-					var mousePosition = _lookAction.ReadValue<Vector2>();
-					if (mousePosition == Vector2.zero)
-						return;
-
-					Position = mousePosition;
-					IsActive = true;
-				}
+				
+				Position = _model.Position;
+				IsActive = true;
 				
 				return;
 			}
 
-			Position = _model.HasTarget 
-				? Camera.main.WorldToScreenPoint(_model.Target.position)
-				: (Vector3)_lookAction.ReadValue<Vector2>();
+			Position = _model.Position;
 		}
 	}
 }

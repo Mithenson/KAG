@@ -3,46 +3,43 @@ using DarkRift.Client.Unity;
 using KAG.Shared.Gameplay;
 using KAG.Shared.Network;
 using KAG.Shared.Transform;
-using KAG.Unity.Common;
 using KAG.Unity.Common.Utilities;
+using KAG.Unity.Scenes.Models;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Zenject;
 
 namespace KAG.Unity.Gameplay
 {
-	[RequireComponent(typeof(SocketRepository))]
 	public sealed class LocalPlayerLookBehaviour : GameplayBehaviour
 	{
 		[SerializeField]
+		private Transform _center;
+		
+		[SerializeField]
 		private Transform _rotationTarget;
-
+		
 		private UnityClient _client;
-		private InputAction _lookAction;
+		private CursorModel _cursorModel;
 
-		private SocketRepository _socketRepository;
 		private RotationComponent _rotation;
 	
 		[Inject]
 		public void Inject(
 			UnityClient client,
-			[Inject(Id = UnityConstants.Inputs.LookAction)] InputAction lookAction)
+			CursorModel cursorModel)
 		{
 			_client = client;
-			_lookAction = lookAction;
+			_cursorModel = cursorModel;
 		}
 
-		private void Awake() => 
-			_socketRepository = GetComponent<SocketRepository>();
-		
 		private void OnEnable() =>
 			_rotation = Entity.GetComponent<RotationComponent>();
 
 		private void Update()
 		{
-			var self = (UnityEngine.Vector2)transform.position;
-			var lookAt = (UnityEngine.Vector2)Camera.main.ScreenToWorldPoint(_lookAction.ReadValue<UnityEngine.Vector2>());
-			var radians = Vector3.SignedAngle(UnityEngine.Vector2.up, (lookAt - self).normalized, Vector3.forward) * Mathf.Deg2Rad;
+			var center = (UnityEngine.Vector2)_center.position;
+			var lookAt = _cursorModel.WorldPosition;
+			var radians = Vector3.SignedAngle(UnityEngine.Vector2.up, (lookAt - center).normalized, Vector3.forward) * Mathf.Deg2Rad;
 			
 			using (var writer = DarkRiftWriter.Create())
 			{
@@ -57,7 +54,6 @@ namespace KAG.Unity.Gameplay
 
 			_rotation.Radians = radians;
 			_rotationTarget.rotation = radians.ToRotation();
-			_socketRepository[Socket.Cursor].position = lookAt;
 		}
 	}
 }

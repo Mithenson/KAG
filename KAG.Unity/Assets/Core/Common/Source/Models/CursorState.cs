@@ -7,13 +7,8 @@ namespace KAG.Unity.Scenes.Models
 	{
 		None = 0,
 		
-		InUI = 1 << 0,
+		InPanel = 1 << 0,
 		InGame = 1 << 1,
-		
-		IsHovering = 1 << 2,
-		
-		Mouse = InUI,
-		Hand = InUI | IsHovering,
-		Crosshair = InGame
+		IsHovering = 1 << 2
 	}
 }
